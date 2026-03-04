@@ -47,6 +47,16 @@ BUILTIN(COMMA,
     comma(value);
 })
 
+BUILTIN(TOCFA,
+{
+    printf("[ >cfa ]\n");
+    
+    header = NULL;
+    header = (word_header_t*)POP();
+    PUSH((header + 1));    
+
+})
+
 // BUILTIN(COMPILE,
 // {
 //     printf("[ compile ]\n");
@@ -57,6 +67,8 @@ BUILTIN(COMMA,
 
 //     header = NULL;
 //     header = find( get_next_word() );
+//     printf("[ compile ] read word   : '%s'\n", current_word);
+//     printf("[ compile ] header      : '%s'\n", header->name);
 //     if (header)
 //     {
 //         printf("word: %s...\n", header->name);

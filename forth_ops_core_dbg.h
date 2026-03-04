@@ -8,6 +8,16 @@ BUILTIN(PRINT_STACK,
     printf("]\n");
 })
 
+BUILTIN(PRINT_CURRENT_WORD,
+{
+
+})
+
+BUILTIN(PRINT_CURRENT_LINE,
+{
+    
+})
+
 BUILTIN(TODO,
 {
     printf("[ ps ]\n");

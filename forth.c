@@ -322,6 +322,9 @@ extern int init_forth(forth_config_t* config)
     current_line[0] = '\0';
     remaining_words = current_line;
 
+    // io buffers
+    char* word_io_buffer = malloc(WORDBUF_LENGTH);
+
     config->include_file_max_depth = NESTED_INCLUDE_MAX_DEPTH;
 
     config->dstack_size      = DATASTACK_SIZE;
@@ -424,12 +427,16 @@ extern void start_forth(forth_config_t* config)
     defcode(";",            CODE(SEMICOLON),    FLAG_IMMEDIATE);
     defcode("'",            CODE(TICK),         FLAG_IMMEDIATE);
     defcode(",",            CODE(COMMA),        0);
-    // defcode("compile",      CODE(COMPILE),      FLAG_IMMEDIATE);
+    defcode(">cfa",         CODE(TOCFA),        0);
     defcode("immediate",    CODE(IMMEDIATE),    FLAG_IMMEDIATE);
+    // defcode("compile",      CODE(COMPILE),      FLAG_IMMEDIATE);
+    
 
     // memory //
-    defcode("@",            CODE(FETCH),        0);
     defcode("!",            CODE(STORE),        0);
+    defcode("@",            CODE(FETCH),        0);
+    defcode("c!",           CODE(CSTORE),       0);
+    defcode("c@",           CODE(CFETCH),       0);
     
     // dstack //
     defcode("dup",          CODE(DUP),          0);
@@ -440,10 +447,17 @@ extern void start_forth(forth_config_t* config)
     // math //
     defcode("+",            CODE(ADD),          0);
     defcode("-",            CODE(SUB),          0);
+    defcode("*",            CODE(MUL),          0);
+    defcode("/",            CODE(DIV),          0);
+    defcode("=",            CODE(EQ),           0);
+
+    // bitwise (bit ops?) //
 
     // io //
     defcode("word",         CODE(WORD),         0);
-    
+
+    // dictionary //
+    defcode("find",         CODE(FIND),         0);
 
     // sys //
     defcode("bye",          CODE(BYE),          0);

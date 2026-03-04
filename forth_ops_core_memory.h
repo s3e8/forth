@@ -16,3 +16,22 @@ BUILTIN(STORE,
 
     *addr = val;
 })
+
+BUILTIN(CSTORE,
+{
+    printf("[ c! ]\n");
+
+    address  = (char*)POP();
+    value    = POP();
+    
+    *address = (char)value;
+})
+
+BUILTIN(CFETCH,
+{
+    printf("[ c@ ]\n");
+
+    address = (char*)POP();
+    value   = *address;
+    PUSH(value);
+})

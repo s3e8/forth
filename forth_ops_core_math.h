@@ -18,6 +18,22 @@ BUILTIN(SUB,
     AT(0) -= tmp;   
 })
 
+BUILTIN(MUL,
+{
+    printf("[ * ]\n");
+
+    tmp = POP();
+    AT(0) *= tmp;   
+})
+
+BUILTIN(DIV,
+{
+    printf("[ / ]\n");
+
+    tmp = POP();
+    AT(0) /= tmp;  
+})
+
 BUILTIN(EQ,
 {
     printf("[ = ]\n");
