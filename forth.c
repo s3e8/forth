@@ -154,7 +154,7 @@ void emit(int c)
     printf("int: %d\n", c);
     fputc(c, output_stream);
 }
-static FILE* input_stream;
+
 // /* C string output */
 // void tell(const char *str)
 // {
