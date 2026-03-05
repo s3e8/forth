@@ -9,7 +9,7 @@ BUILTIN(WORD,
 {
     printf("[ word ]\n");
 
-    PUSH(get_next_word());
+    PUSH(get_next_word(wordbuf));
 })
 
 BUILTIN(KEY,
@@ -28,9 +28,9 @@ BUILTIN(EMIT,
 
 BUILTIN(TELL,
 {
-    printf("[ emit ]\n");
+    printf("[ tell ]\n");
 
-    fputs((char*)POP());
+    fputs((char*)POP(), output_stream);
 })
 
 // BYTECODE(PROMPT, "prompt", 2, 0, 0, {

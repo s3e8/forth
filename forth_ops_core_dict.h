@@ -17,7 +17,7 @@ BUILTIN(VARIABLE, {
     
     printf("[ variable ]\n");
 
-    char* name = get_next_word();
+    char* name = get_next_word(current_word);
     if (!name)
     {
         printf("Error: No name for variable\n");

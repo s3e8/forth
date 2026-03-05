@@ -48,11 +48,14 @@ typedef struct reader_state
 
 static FILE* input_stream;
 static FILE* output_stream;
-static cell  word_length = WORDBUF_LENGTH;
-static cell  line_length = LINEBUF_LENGTH;
-static char* current_word = NULL;
-static char* current_line = NULL;
-static char* remaining_words = NULL;
+static cell  word_length        = WORDBUF_LENGTH;
+static cell  line_length        = LINEBUF_LENGTH;
+static char* wordbuf            = NULL;
+static char* linebuf            = NULL;
+static char* current_word       = NULL; // todo: init here?
+static char* current_line       = NULL;
+static char* remaining_words    = NULL;
+
 
 static void skip_whitespace() 
 {
@@ -86,9 +89,9 @@ static char* get_next_line()
     return remaining_words;
 }
 
-static char* get_next_word()
+static char* get_next_word(char* tobuf)
 {
-    char* new_word_buffer = current_word; // setting up a temp buffer to copy new word into current_word
+    char* new_word_buffer = tobuf; // setting up a temp buffer to copy new word into current_word
 
     // buffer exhausted? get_next_line
     while (1)
@@ -107,7 +110,7 @@ static char* get_next_word()
             { 
                 // todo: should I set stream to stdin here?
                 // printf("No more lines, returning NULL\n");
-                current_word[0] = '\0';
+                tobuf[0] = '\0';
                 return NULL;
             }
             // Continue to skip whitespace on the new line
@@ -126,7 +129,7 @@ static char* get_next_word()
 
     *new_word_buffer = '\0'; // todo: what's this doing?
 
-    return current_word;;
+    return tobuf;;
 }
 
 // static cell is_number(const char* token, cell result, cell base) {
@@ -319,6 +322,8 @@ extern int init_forth(forth_config_t* config)
     output_stream = stdout;
     word_length     = WORDBUF_LENGTH;
     line_length     = LINEBUF_LENGTH;
+    wordbuf         = malloc(WORDBUF_LENGTH);
+    linebuf         = malloc(LINEBUF_LENGTH);
     current_word    = malloc(WORDBUF_LENGTH);
     current_line    = malloc(LINEBUF_LENGTH);
     current_word[0] = '\0';
@@ -499,7 +504,7 @@ extern void start_forth(forth_config_t* config)
     BUILTIN(INTERPRET,
     {
         printf("[ interpret ]\n");
-        if (!get_next_word())
+        if (!get_next_word(current_word))
         {
             if (is_eof() && input_stream != stdin) 
                 input_stream = stdin; // todo: this still fires even if stream == stdin
