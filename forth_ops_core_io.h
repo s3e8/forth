@@ -25,3 +25,16 @@ BUILTIN(EMIT,
 
     emit(POP());
 })
+
+BUILTIN(TELL,
+{
+    printf("[ emit ]\n");
+
+    fputs((char*)POP());
+})
+
+// BYTECODE(PROMPT, "prompt", 2, 0, 0, {
+//     reader_state_t *state = (reader_state_t*)POP();
+//     char *prompt = (char*)POP();
+//     prompt_line(prompt, state);
+//   })

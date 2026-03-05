@@ -461,6 +461,7 @@ extern void start_forth(forth_config_t* config)
     defcode("word",         CODE(WORD),         0);
     defcode("key",          CODE(KEY),          0);
     defcode("emit",         CODE(EMIT),         0);
+    defcode("tell",         CODE(TELL),         0);
 
     // dictionary //
     defcode("create",       CODE(CREATE),       0);
