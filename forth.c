@@ -46,32 +46,13 @@ typedef struct reader_state
     char* remaining_words;
 } reader_state_t;
 
-static FILE* current_stream;
+static FILE* input_stream;
+static FILE* output_stream;
 static cell  word_length = WORDBUF_LENGTH;
 static cell  line_length = LINEBUF_LENGTH;
 static char* current_word = NULL;
 static char* current_line = NULL;
 static char* remaining_words = NULL;
-
-// /* The primary data output function. This is the place to change if you want
-// * to e.g. output data on a microcontroller via a serial interface. */
-// void emit(const char* c, FILE* stream)
-// {
-//     fputs(c, stream);
-// }
-
-// /* C string output */
-// void tell(const char *str)
-// {
-//     while (*str)
-//         emit(*str++, current_stream);
-// }
-
-// /* toupper() clone so we don't have to pull in ctype.h */
-// char up(char c)
-// {
-//     return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
-// }
 
 static void skip_whitespace() 
 {
@@ -86,18 +67,18 @@ static cell is_eol()
 
 static cell is_eof()
 {
-    return (cell)(is_eol() && feof(current_stream));
+    return (cell)(is_eol() && feof(input_stream));
 }
 
 static char* get_next_line()
 {
     printf("getting next line...\n");
-    if (current_stream == stdin)
+    if (input_stream == stdin)
     {
         printf("forth> ");
         fflush(stdout);
     }
-    if (!fgets(current_line, line_length, current_stream)) return NULL;
+    if (!fgets(current_line, line_length, input_stream)) return NULL;
 
     remaining_words = current_line;
     remaining_words[strcspn(remaining_words, "\n")] = '\0'; // todo: is this necessary? -- yes... change new line to termination character
@@ -156,7 +137,7 @@ static char* get_next_word()
 //     return (*endptr == '\0' && endptr != token);
 // }
 
-static int key(reader_state_t* reader_state)
+static int key()
 {
     if (*remaining_words == '\0')
     {
@@ -165,6 +146,27 @@ static int key(reader_state_t* reader_state)
 
     return *remaining_words++;
 }
+
+/* The primary data output function. This is the place to change if you want
+* to e.g. output data on a microcontroller via a serial interface. */ // todo: this applies less with current_stream global i think
+void emit(int c)
+{
+    printf("int: %d\n", c);
+    fputc(c, output_stream);
+}
+static FILE* input_stream;
+// /* C string output */
+// void tell(const char *str)
+// {
+//     while (*str)
+//         emit(*str++, current_stream);
+// }
+
+// /* toupper() clone so we don't have to pull in ctype.h */
+// char up(char c)
+// {
+//     return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
+// }
 
 /// dictionary ///
 /// word header flags ///
@@ -313,7 +315,8 @@ extern int init_forth(forth_config_t* config)
         bootstrap = stdin;
     }
 
-    current_stream  = bootstrap;
+    input_stream  = bootstrap;
+    output_stream = stdout;
     word_length     = WORDBUF_LENGTH;
     line_length     = LINEBUF_LENGTH;
     current_word    = malloc(WORDBUF_LENGTH);
@@ -372,6 +375,7 @@ extern void start_forth(forth_config_t* config)
     cell state = 0;
 
     /* and finally, some quick access variables */
+    // todo: organize by what is mostly used by each type of bytecode... eg stack, math, dict, etc
     register word_header_t* header;
     register char* address; // todo: shouldn't this be cell?
     register void* code;
@@ -431,7 +435,6 @@ extern void start_forth(forth_config_t* config)
     defcode("immediate",    CODE(IMMEDIATE),    FLAG_IMMEDIATE);
     // defcode("compile",      CODE(COMPILE),      FLAG_IMMEDIATE);
     
-
     // memory //
     defcode("!",            CODE(STORE),        0);
     defcode("@",            CODE(FETCH),        0);
@@ -454,14 +457,20 @@ extern void start_forth(forth_config_t* config)
     // bitwise (bit ops?) //
 
     // io //
+    defcode(".",            CODE(DOT),          0);
     defcode("word",         CODE(WORD),         0);
+    defcode("key",          CODE(KEY),          0);
+    defcode("emit",         CODE(EMIT),         0);
 
     // dictionary //
+    defcode("create",       CODE(CREATE),       0);
     defcode("find",         CODE(FIND),         0);
+    defcode("variable",     CODE(VARIABLE),     0);
 
     // sys //
     defcode("bye",          CODE(BYE),          0);
     defcode("die",          CODE(DIE),          0);
+
     // dbg //
     defcode("ps",           CODE(PRINT_STACK),  0);
 
@@ -491,8 +500,8 @@ extern void start_forth(forth_config_t* config)
         printf("[ interpret ]\n");
         if (!get_next_word())
         {
-            if (is_eof() && current_stream != stdin) 
-                current_stream = stdin; // todo: this still fires even if stream == stdin
+            if (is_eof() && input_stream != stdin) 
+                input_stream = stdin; // todo: this still fires even if stream == stdin
                 
             NEXT();
         }
