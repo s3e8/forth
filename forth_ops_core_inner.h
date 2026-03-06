@@ -14,6 +14,13 @@ BUILTIN(0BRANCH,
     if (!POP()) ip += (tmp / sizeof(void*)) - 1;
 })
 
+BUILTIN(EXECUTE,
+{
+    printf("[ execute ]\n");
+    
+    PUSHRS(ip);
+    ip = (void**)POP();
+})
 
 // BYTECODE(OPENFILE, "open-file", 2, 0, 0, {
 //     char *mode = (char*)POP();

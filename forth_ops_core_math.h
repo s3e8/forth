@@ -34,12 +34,36 @@ BUILTIN(DIV,
     AT(0) /= tmp;  
 })
 
+BUILTIN(MOD,
+{
+    printf("[ mod ]\n");
+
+    tmp = POP();
+    AT(0) = AT(0) % tmp;    
+})
+
 BUILTIN(EQ,
 {
     printf("[ = ]\n");
 
     tmp = POP(); 
     AT(0) = AT(0) == tmp;
+})
+
+BUILTIN(GT,
+{
+    printf("[ > ]\n");
+
+    tmp = POP();
+    AT(0) = AT(0) > tmp;   
+})
+
+BUILTIN(LT,
+{
+    printf("[ < ]\n");
+
+    tmp = POP();
+    AT(0) = AT(0) > tmp;   
 })
 
 // BUILTIN(SUB,  { tmp = POP(); AT(0) -= tmp; })

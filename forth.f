@@ -11,3 +11,7 @@
 : while     ' 0branch , >mark                                   ; immediate
 : repeat    '  branch , swap here - , dup here swap - swap !    ; immediate
 
+
+: cr    10 emit ;
+: space 32 emit ;
+: spaces begin dup 0 > while space 1 - repeat drop ;

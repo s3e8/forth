@@ -431,6 +431,7 @@ extern void start_forth(forth_config_t* config)
     // inner //
     defcode("latest",       CODE(LATEST),       0); // bytecode, since it's a C var that changes
     defcode("0branch",      CODE(0BRANCH),      0);
+    // defcode("execute",      CODE(EXECUTE),      0); // todo: vs builtin-exe vs iexe?
 
     // compile //
     defcode(":",            CODE(COLON),        0);
@@ -458,7 +459,10 @@ extern void start_forth(forth_config_t* config)
     defcode("-",            CODE(SUB),          0);
     defcode("*",            CODE(MUL),          0);
     defcode("/",            CODE(DIV),          0);
+    defcode("mod",          CODE(MOD),          0);
     defcode("=",            CODE(EQ),           0);
+    defcode(">",            CODE(GT),           0);
+    defcode("<",            CODE(LT),           0);
 
     // bitwise (bit ops?) //
 
@@ -480,6 +484,7 @@ extern void start_forth(forth_config_t* config)
 
     // dbg //
     defcode("ps",           CODE(PRINT_STACK),  0);
+    defcode("todo",         CODE(TODO),         0);
 
     ip = quit;
     NEXT();
