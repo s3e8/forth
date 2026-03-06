@@ -42,6 +42,30 @@ BUILTIN(MOD,
     AT(0) = AT(0) % tmp;    
 })
 
+BUILTIN(DIVMOD,
+{
+    printf("[ /mod ]\n");
+
+    cell a = POP();
+    cell b = POP();
+    PUSH( b % a );
+    PUSH( b / a );   
+})
+
+BUILTIN(ADD1,
+{
+    printf("[ 1+ ]\n");
+
+    AT(0) += 1;
+})
+
+BUILTIN(SUB1,
+{
+    printf("[ 1+ ]\n");
+
+    AT(0) -= 1;
+})
+
 BUILTIN(EQ,
 {
     printf("[ = ]\n");
@@ -66,6 +90,57 @@ BUILTIN(LT,
     AT(0) = AT(0) > tmp;   
 })
 
+BUILTIN(LTE,
+{
+    printf("[ <= ]\n");
+
+    tmp = POP();
+    AT(0) = AT(0) <= tmp;   
+})
+
+BUILTIN(GTE,
+{
+    printf("[ >= ]\n");
+
+    tmp = POP();
+    AT(0) = AT(0) >= tmp;   
+})
+
 // BUILTIN(SUB,  { tmp = POP(); AT(0) -= tmp; })
 // BUILTIN(ADD,  { tmp = POP(); AT(0) += tmp; })
 // BUILTIN(EQ,   { tmp = POP(); AT(0) = AT(0) == tmp; })
+
+
+
+
+// bitwise //
+BUILTIN(AND,
+{
+    printf("[ and ]\n");
+    
+    tmp = POP();
+    AT(0) &= tmp;   
+})
+
+BUILTIN(OR,
+{
+    printf("[  or ]\n");
+
+    tmp = POP();
+    AT(0) |= tmp;
+})
+
+BUILTIN(XOR,
+{
+    printf("[ xor ]\n");
+
+    tmp = POP();
+    AT(0) ^= tmp; 
+})
+
+BUILTIN(INVERT,
+{
+    printf("[ invert ]\n");
+
+    AT(0) = ~AT(0); 
+})

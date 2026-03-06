@@ -429,8 +429,10 @@ extern void start_forth(forth_config_t* config)
     defconst("base",        (cell) &base);
 
     // inner //
-    defcode("latest",       CODE(LATEST),       0); // bytecode, since it's a C var that changes
-    defcode("0branch",      CODE(0BRANCH),      0);
+    defcode("latest",       CODE(LATEST),           0); // bytecode, since it's a C var that changes
+    defcode("0branch",      CODE(0BRANCH),          0);
+    defcode("r>",           CODE(FROMR),            0);
+    defcode(">r",           CODE(TOR),              0);
     // defcode("execute",      CODE(EXECUTE),      0); // todo: vs builtin-exe vs iexe?
 
     // compile //
@@ -438,6 +440,8 @@ extern void start_forth(forth_config_t* config)
     defcode(";",            CODE(SEMICOLON),    FLAG_IMMEDIATE);
     defcode("'",            CODE(TICK),         FLAG_IMMEDIATE);
     defcode(",",            CODE(COMMA),        0);
+    defcode("[",            CODE(LBRAC),        FLAG_IMMEDIATE);
+    defcode("]",            CODE(RBRAC),        0);
     defcode(">cfa",         CODE(TOCFA),        0);
     defcode("immediate",    CODE(IMMEDIATE),    FLAG_IMMEDIATE);
     // defcode("compile",      CODE(COMPILE),      FLAG_IMMEDIATE);
@@ -453,6 +457,12 @@ extern void start_forth(forth_config_t* config)
     defcode("swap",         CODE(SWAP),         0);
     defcode("drop",         CODE(DROP),         0);
     defcode("over",         CODE(OVER),         0);
+    defcode("nip",          CODE(NIP),          0);
+    defcode("tuck",         CODE(TUCK),         0);
+    defcode("rot",          CODE(ROT),          0);
+    defcode("-rot",         CODE(MROT),         0);
+    defcode("2dup",         CODE(2DUP),         0);
+    defcode("2drop",        CODE(2DROP),        0);
 
     // math //
     defcode("+",            CODE(ADD),          0);
@@ -460,11 +470,19 @@ extern void start_forth(forth_config_t* config)
     defcode("*",            CODE(MUL),          0);
     defcode("/",            CODE(DIV),          0);
     defcode("mod",          CODE(MOD),          0);
+    defcode("/mod",         CODE(DIVMOD),       0);
+    defcode("1+",           CODE(ADD1),         0);
+    defcode("1-",           CODE(SUB1),         0);
     defcode("=",            CODE(EQ),           0);
     defcode(">",            CODE(GT),           0);
     defcode("<",            CODE(LT),           0);
-
+    defcode(">=",           CODE(GTE),          0);
+    defcode("<=",           CODE(LTE),          0);
     // bitwise (bit ops?) //
+    defcode("and",          CODE(AND),          0);
+    defcode("or",           CODE(OR),           0);
+    defcode("xor",          CODE(XOR),          0);
+    defcode("invert",       CODE(INVERT),       0);
 
     // io //
     defcode(".",            CODE(DOT),          0);

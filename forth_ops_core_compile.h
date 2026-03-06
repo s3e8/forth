@@ -47,6 +47,20 @@ BUILTIN(COMMA,
     comma(value);
 })
 
+BUILTIN(LBRAC,
+{
+    printf("[ [ ]\n");
+
+    state = STATE_IMMEDIATE;
+})
+
+BUILTIN(RBRAC,
+{
+    printf("[ ] ]\n");
+
+    state = STATE_COMPILE;
+})
+
 BUILTIN(TOCFA,
 {
     printf("[ >cfa ]\n");

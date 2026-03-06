@@ -14,10 +14,26 @@ BUILTIN(0BRANCH,
     if (!POP()) ip += (tmp / sizeof(void*)) - 1;
 })
 
+BUILTIN(FROMR,
+{
+    printf("[ r> ]\n");
+
+    tmp = (cell)POPRS();
+    PUSH(tmp);    
+})
+
+BUILTIN(TOR,
+{
+    printf("[ >r ]\n");
+
+    tmp = POP();
+    PUSHRS(tmp);   
+})
+
 BUILTIN(EXECUTE,
 {
     printf("[ execute ]\n");
-    
+
     PUSHRS(ip);
     ip = (void**)POP();
 })
