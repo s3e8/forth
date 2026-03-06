@@ -288,7 +288,7 @@ void defvar(const char* name, cell value)
 static void todo(const char* name) { printf("word not implemented: %s\n", name); }
 
 /// vm ///
-#define NEXT() goto **ip++  // todo: why ** //
+#define NEXT() goto *(*ip++)  // todo: why ** //
 #define ARG()       (*ip++)                 // takes the next item on the ip thread as
 #define INTARG()    ((cell)(*ip++))         // takes the next item on the ip thread as an int argument, casted as (cell) cause... forth
 #define PUSHRS(x)   (*--rs = (void**)(x))   // grow/decrement downward first, then store
@@ -322,10 +322,12 @@ extern int init_forth(forth_config_t* config)
     output_stream = stdout;
     word_length     = WORDBUF_LENGTH;
     line_length     = LINEBUF_LENGTH;
-    wordbuf         = malloc(WORDBUF_LENGTH);
-    linebuf         = malloc(LINEBUF_LENGTH);
-    current_word    = malloc(WORDBUF_LENGTH);
-    current_line    = malloc(LINEBUF_LENGTH);
+    wordbuf         = malloc(word_length);
+    linebuf         = malloc(line_length);
+    current_word    = malloc(word_length);
+    current_line    = malloc(line_length);
+    wordbuf[0]      = '\0';
+    linebuf[0]      = '\0';
     current_word[0] = '\0';
     current_line[0] = '\0';
     remaining_words = current_line;
