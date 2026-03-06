@@ -120,7 +120,7 @@ BUILTIN(GTZ,
     AT(0) = AT(0) > 0;
 })
 
-BUILTIN(GTZ,
+BUILTIN(LTZ,
 {
     printf("[ 0< ]\n");
 
@@ -134,7 +134,7 @@ BUILTIN(GTEZ,
     AT(0) = AT(0) >= 0;
 })
 
-BUILTIN(GTEZ,
+BUILTIN(LTEZ,
 {
     printf("[ 0<= ]\n");
 
