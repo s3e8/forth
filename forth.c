@@ -285,10 +285,9 @@ void defvar(const char* name, cell value)
     defconst(name, address);
 }
 
-static void todo(const char* name) { printf("word not implemented: %s\n", name); }
-
 /// vm ///
 #define NEXT() goto *(*ip++)  // todo: why ** //
+
 #define ARG()       (*ip++)                 // takes the next item on the ip thread as
 #define INTARG()    ((cell)(*ip++))         // takes the next item on the ip thread as an int argument, casted as (cell) cause... forth
 #define PUSHRS(x)   (*--rs = (void**)(x))   // grow/decrement downward first, then store

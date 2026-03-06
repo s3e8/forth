@@ -21,6 +21,6 @@ BUILTIN(PRINT_CURRENT_LINE,
 BUILTIN(TODO,
 {
     printf("[ ps ]\n");
-    todo(current_word); 
+    printf("word not implemented: %s\n", current_word);
     return;
 })
