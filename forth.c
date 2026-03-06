@@ -433,6 +433,7 @@ extern void start_forth(forth_config_t* config)
     defcode("0branch",      CODE(0BRANCH),          0);
     defcode("r>",           CODE(FROMR),            0);
     defcode(">r",           CODE(TOR),              0);
+    defcode("r@",           CODE(RFETCH),           0);
     // defcode("execute",      CODE(EXECUTE),      0); // todo: vs builtin-exe vs iexe?
 
     // compile //

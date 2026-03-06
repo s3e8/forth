@@ -30,6 +30,13 @@ BUILTIN(TOR,
     PUSHRS(tmp);   
 })
 
+BUILTIN(RFETCH,
+{
+    printf("[ r@ ]\n");
+
+    PUSH((cell)*rs);  // peek at top of return stack, don't pop
+})
+
 BUILTIN(EXECUTE,
 {
     printf("[ execute ]\n");
