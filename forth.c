@@ -431,10 +431,12 @@ extern void start_forth(forth_config_t* config)
     // inner //
     defcode("latest",       CODE(LATEST),           0); // bytecode, since it's a C var that changes
     defcode("0branch",      CODE(0BRANCH),          0);
+    // defcode("execute",      CODE(EXECUTE),      0); // todo: vs builtin-exe vs iexe?
+
+    // rstack //
     defcode("r>",           CODE(FROMR),            0);
     defcode(">r",           CODE(TOR),              0);
     defcode("r@",           CODE(RFETCH),           0);
-    // defcode("execute",      CODE(EXECUTE),      0); // todo: vs builtin-exe vs iexe?
 
     // compile //
     defcode(":",            CODE(COLON),        0);
@@ -479,6 +481,12 @@ extern void start_forth(forth_config_t* config)
     defcode("<",            CODE(LT),           0);
     defcode(">=",           CODE(GTE),          0);
     defcode("<=",           CODE(LTE),          0);
+    defcode("0=",           CODE(EQZ),          0);
+    defcode("0>",           CODE(GTZ),          0);
+    defcode("0<",           CODE(LTZ),          0);
+    defcode("0>=",          CODE(GTEZ),         0);
+    defcode("0<=",          CODE(LTEZ),         0);
+    defcode("0<>",          CODE(NEQZ),         0);
     // bitwise (bit ops?) //
     defcode("and",          CODE(AND),          0);
     defcode("or",           CODE(OR),           0);

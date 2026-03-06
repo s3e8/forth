@@ -106,6 +106,49 @@ BUILTIN(GTE,
     AT(0) = AT(0) >= tmp;   
 })
 
+BUILTIN(EQZ,
+{
+    printf("[ 0= ]\n");
+
+    AT(0) = AT(0)==0;
+})
+
+BUILTIN(GTZ,
+{
+    printf("[ 0> ]\n");
+
+    AT(0) = AT(0) > 0;
+})
+
+BUILTIN(GTZ,
+{
+    printf("[ 0< ]\n");
+
+    AT(0) = AT(0) < 0;
+})
+
+BUILTIN(GTEZ,
+{
+    printf("[ 0>= ]\n");
+
+    AT(0) = AT(0) >= 0;
+})
+
+BUILTIN(GTEZ,
+{
+    printf("[ 0<= ]\n");
+
+    AT(0) = AT(0) <= 0;
+})
+
+
+BUILTIN(NEQZ,
+{
+    printf("[ 0<> ]\n");
+
+    AT(0) = AT(0)!=0;
+})
+
 // BUILTIN(SUB,  { tmp = POP(); AT(0) -= tmp; })
 // BUILTIN(ADD,  { tmp = POP(); AT(0) += tmp; })
 // BUILTIN(EQ,   { tmp = POP(); AT(0) = AT(0) == tmp; })
