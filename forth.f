@@ -2,6 +2,13 @@
 
 : here      dp @        ;
 
+: cell      inline cellsize     ;
+: cells     inline cellsize *   ;
+
+: aligned   cellsize 1- + cellsize 1- invert and    ;
+: align     here aligned here !                     ;
+: allot     here swap here +! align                 ;
+
 : >mark     here 0 ,    ;
 : >resolve  here swap ! ;
 
@@ -29,20 +36,10 @@
 
 : ?iscall   >cfa @ ' call = ;
 
-: cell      inline cellsize     ;
-: cells     inline cellsize *   ;
+:  compile, dup ?builtin if >cfa @ , else ' call , >cfa , then  ;
+:  compile  word find compile,                                  ;
+: [compile] word find compile,                                  ; immediate
 
 
 : interpret todo ;
 : quit      todo ;
-
-
-: [compile] 
-    word find
-    dup @ f_builtin and
-    if
-	>cfa @ ,
-    else
-	' call , >cfa ,
-    then
-; immediate
