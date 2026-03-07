@@ -113,6 +113,13 @@ BUILTIN(2DROP,
     ds += 2;
 })
 
+BUILTIN(CONDDUP,
+{
+    printf("[ ?dup ]\n");
+
+    if (TOP()) PUSH(TOP());  // dup only if nonzero
+})
+
 // BUILTIN(DUP,  { tmp = TOP(); PUSH(tmp); })
 // BUILTIN(SWAP, { a = POP(); b = POP(); PUSH(a); PUSH(b); })
 // BUILTIN(DROP, { ds++; })

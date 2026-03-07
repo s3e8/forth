@@ -1,5 +1,6 @@
 #include "forth_ops_core_inner.h"
 #include "forth_ops_core_compile.h"
+#include "forth_ops_core_control_flow.h"
 #include "forth_ops_core_memory.h"
 #include "forth_ops_core_rstack.h"
 #include "forth_ops_core_dstack.h"

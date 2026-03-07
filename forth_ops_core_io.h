@@ -38,3 +38,14 @@ BUILTIN(TELL,
 //     char *prompt = (char*)POP();
 //     prompt_line(prompt, state);
 //   })
+
+
+// BYTECODE(OPENFILE, "open-file", 2, 0, 0, {
+//     char *mode = (char*)POP();
+//     char *fn = (char*)POP();
+//     PUSH(open_file(fn, mode));
+//   })
+// BYTECODE(CLOSEFILE, "close-file", 1, 0, 0, {
+//     reader_state_t *state = (reader_state_t*)POP();
+//     close_file(state);    
+//   })

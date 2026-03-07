@@ -431,6 +431,7 @@ extern void start_forth(forth_config_t* config)
     // inner //
     defcode("latest",       CODE(LATEST),           0); // bytecode, since it's a C var that changes
     defcode("0branch",      CODE(0BRANCH),          0);
+    // defcode("iexecute",     CODE(IEXECUTE),         0);
     // defcode("execute",      CODE(EXECUTE),      0); // todo: vs builtin-exe vs iexe?
 
     // rstack //
@@ -466,6 +467,7 @@ extern void start_forth(forth_config_t* config)
     defcode("-rot",         CODE(MROT),         0);
     defcode("2dup",         CODE(2DUP),         0);
     defcode("2drop",        CODE(2DROP),        0);
+    defcode("?dup",         CODE(CONDDUP),      0);
 
     // math //
     defcode("+",            CODE(ADD),          0);
@@ -491,7 +493,9 @@ extern void start_forth(forth_config_t* config)
     defcode("and",          CODE(AND),          0);
     defcode("or",           CODE(OR),           0);
     defcode("xor",          CODE(XOR),          0);
-    defcode("invert",       CODE(INVERT),       0);
+    defcode("invert",       CODE(NEG),          0);
+    defcode("lshift",       CODE(LSHIFT),       0);
+    defcode("rshift",       CODE(RSHIFT),       0);
 
     // io //
     defcode(".",            CODE(DOT),          0);

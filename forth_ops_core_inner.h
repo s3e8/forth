@@ -1,38 +1,23 @@
-BUILTIN(LATEST,
-{
-    printf("[ latest ]\n");
-    
-    PUSH(&latest);
-})
-
-BUILTIN(0BRANCH,
-{
-    printf("[ 0branch ]\n");
-
-    tmp = INTARG();
-
-    if (!POP()) ip += (tmp / sizeof(void*)) - 1;
-})
-
-
-
-BUILTIN(EXECUTE,
+BUILTIN(EXECUTE, // exec-word
 {
     printf("[ execute ]\n");
 
     PUSHRS(ip);
     ip = (void**)POP();
-})
+}) // todod: this is not an inner word... then what is it?
 
-// BYTECODE(OPENFILE, "open-file", 2, 0, 0, {
-//     char *mode = (char*)POP();
-//     char *fn = (char*)POP();
-//     PUSH(open_file(fn, mode));    
-//   })
-// BYTECODE(CLOSEFILE, "close-file", 1, 0, 0, {
-//     reader_state_t *state = (reader_state_t*)POP();
-//     close_file(state);    
-//   })
+
+
+// // todo: this is not for inner I dont think? 
+// BUILTIN(IEXECUTE,
+// {
+//     printf("[ iexecute ]\n");
+//     word_header_t* entry = (word_header_t*)POP();
+//     CODE(DOCOL);
+// })
+
+
+
 // BYTECODE(ISEOF, "?eof", 1, 0, 0, {
 //     reader_state_t *state = (reader_state_t*)POP();
 //     PUSH(is_eof(state));

@@ -1,3 +1,10 @@
+BUILTIN(LATEST,
+{
+    printf("[ latest ]\n");
+    
+    PUSH(&latest);
+})
+
 BUILTIN(CREATE,
 {
     printf("[ create ]\n");

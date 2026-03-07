@@ -153,7 +153,28 @@ BUILTIN(NEQZ,
 // BUILTIN(ADD,  { tmp = POP(); AT(0) += tmp; })
 // BUILTIN(EQ,   { tmp = POP(); AT(0) = AT(0) == tmp; })
 
+BUILTIN(ABS,
+{
+    printf("[ abs ]\n");
 
+    if ((cell)TOP() < 0) AT(0) = -AT(0);
+})
+
+BUILTIN(MIN,
+{
+    printf("[ min ]\n");
+
+    tmp = POP();
+    if (tmp < TOP()) AT(0) = tmp;
+})
+
+BUILTIN(MAX,
+{
+    printf("[ max ]\n");
+
+    tmp = POP();
+    if (tmp > TOP()) AT(0) = tmp;
+})
 
 
 // bitwise //
@@ -181,9 +202,25 @@ BUILTIN(XOR,
     AT(0) ^= tmp; 
 })
 
-BUILTIN(INVERT,
+BUILTIN(NEG,
 {
     printf("[ invert ]\n");
 
     AT(0) = ~AT(0); 
+})
+
+BUILTIN(LSHIFT,
+{
+    printf("[ lshift ]\n");
+
+    tmp = POP();
+    AT(0) <<= tmp;  
+})
+
+BUILTIN(RSHIFT,
+{
+    printf("[ rshift ]\n");
+
+    tmp = POP();
+    AT(0) >>= tmp;  
 })
