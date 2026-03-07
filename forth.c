@@ -421,7 +421,7 @@ extern void start_forth(forth_config_t* config)
     defconst("floatsize",   (cell) sizeof(float));
     defconst("headersize",  (cell) sizeof(word_header_t));
     // todo: make here... bytecode? like latest..
-    defconst("dp",          (cell) &here); // we give the address so we can store stuff there
+    defconst("here",        (cell) &here); // we give the address so we can store stuff there
     defconst("here0",       (cell) here0); // todo: why not &here0? cause malloc?
     defconst("s0",          (cell) &s0);
     defconst("r0",          (cell) &r0);
@@ -445,7 +445,7 @@ extern void start_forth(forth_config_t* config)
     defcode("]",            CODE(RBRAC),        0);
     defcode(">cfa",         CODE(TOCFA),        0);
     defcode("immediate",    CODE(IMMEDIATE),    FLAG_IMMEDIATE);
-    defcode("inline",       CODE(INLINE),       FLAG_IMMEDIATE);
+    // defcode("inline",       CODE(INLINE),       FLAG_IMMEDIATE); // keep in bootstrap
     // defcode("compile",      CODE(COMPILE),      FLAG_IMMEDIATE);
     
     // memory //
@@ -453,6 +453,7 @@ extern void start_forth(forth_config_t* config)
     defcode("@",            CODE(FETCH),        0);
     defcode("c!",           CODE(CSTORE),       0);
     defcode("c@",           CODE(CFETCH),       0);
+    defcode("+!",           CODE(MEMADD),       0);
     
     // dstack //
     defcode("dup",          CODE(DUP),          0);

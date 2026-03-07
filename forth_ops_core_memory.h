@@ -35,3 +35,10 @@ BUILTIN(CFETCH,
     value   = *address;
     PUSH(value);
 })
+
+BUILTIN(MEMADD,
+{
+    cell *addr = (cell*)POP();
+    tmp = POP();
+    *addr += tmp;    
+})
