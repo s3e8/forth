@@ -111,6 +111,17 @@ BUILTIN(IMMEDIATE,
     // word_header->flags ^= FLAG_IMMEDIATE;
 })
 
+BUILTIN(INLINE,
+{
+    printf("[ inline ]\n");
+
+    latest->flags ^= FLAG_INLINE; // todo: check -- slarba's def, no args
+
+    // todo: does this need to pop the word header off first?
+    // word_header_t* word_header = (word_header_t*)POP();
+    // word_header->flags ^= INLINE;
+})
+
 // : make-inline
 //     latest @ dup
 //     @ f_inline xor

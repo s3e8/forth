@@ -445,6 +445,7 @@ extern void start_forth(forth_config_t* config)
     defcode("]",            CODE(RBRAC),        0);
     defcode(">cfa",         CODE(TOCFA),        0);
     defcode("immediate",    CODE(IMMEDIATE),    FLAG_IMMEDIATE);
+    defcode("inline",       CODE(INLINE),       FLAG_IMMEDIATE);
     // defcode("compile",      CODE(COMPILE),      FLAG_IMMEDIATE);
     
     // memory //

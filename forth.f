@@ -1,9 +1,36 @@
+: bl    32      ; inline
+: cr    10 emit ; inline
+: space 32 emit ; inline
+: spaces begin dup 0 > while space 1 - repeat drop ;
+
+: str=  strcmp 0=   ; inline
+: str<  strcmp 0<   ; inline
+: str>  strcmp 0>   ; inline
+: str<> strcmp      ; inline
+
+: negate    0 swap - ; inline
+: true      1   ; inline
+: false     0   ; inline
+: not       0=  ; inline
+
+: min 2dup < if drop else nip then ;
+: max 2dup > if drop else nip then ;
+: fmin f2dup f< if fdrop else fnip then ;
+: fmax f2dup f> if fdrop else fnip then ;
+
+
+
+
+
+
 : alias todo ;
 
 : here      dp @        ;
 
-: cell      inline cellsize     ;
-: cells     inline cellsize *   ;
+: cell  cellsize   ; inline
+: cells cellsize * ; inline
+: cell+ cellsize + ; inline
+: cell- cellsize - ; inline
 
 : aligned   cellsize 1- + cellsize 1- invert and    ;
 : align     here aligned here !                     ;
@@ -22,9 +49,7 @@
 : repeat    '  branch , swap here - , dup here swap - swap !    ; immediate
 : recurse   '  call ,   latest @ >cfa ,                         ; immediate
 
-: cr    10 emit ;
-: space 32 emit ;
-: spaces begin dup 0 > while space 1 - repeat drop ;
+
 
 : ? @ . ;
 
