@@ -4,9 +4,28 @@ BUILTIN(EXECUTE, // exec-word
 
     PUSHRS(ip);
     ip = (void**)POP();
-}) // todod: this is not an inner word... then what is it?
+}) // todo: this is not an inner word... then what is it?
 
+// BYTECODE(BUITINEXEC, "exec-builtin", 1, 0, 0, {
+//     builtin_immediatebuf[0] = (void*)POP();
+//     *--nestingstack = ip;
+//     ip = builtin_immediatebuf;
+// })
 
+BUILTIN(JUMP,
+{
+    printf("[ jump ]\n");
+
+    void *fn = ARG();
+    ip = fn;
+}) // todo: same as execute.. where does this belong?
+
+BUILTIN(IWORD,
+{
+    printf("[ iword ]\n");
+
+    PUSH(get_next_word(linebuf));
+})
 
 // // todo: this is not for inner I dont think? 
 // BUILTIN(IEXECUTE,

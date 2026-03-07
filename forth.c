@@ -428,11 +428,8 @@ extern void start_forth(forth_config_t* config)
     defconst("state",       (cell) &state); // todo: should this be a const or a code...
     defconst("base",        (cell) &base);
 
-    // inner //
-    defcode("latest",       CODE(LATEST),           0); // bytecode, since it's a C var that changes
+    // control flow //
     defcode("0branch",      CODE(0BRANCH),          0);
-    // defcode("iexecute",     CODE(IEXECUTE),         0);
-    // defcode("execute",      CODE(EXECUTE),      0); // todo: vs builtin-exe vs iexe?
 
     // rstack //
     defcode("r>",           CODE(FROMR),            0);
@@ -505,6 +502,7 @@ extern void start_forth(forth_config_t* config)
     defcode("tell",         CODE(TELL),         0);
 
     // dictionary //
+    defcode("latest",       CODE(LATEST),           0); // bytecode, since it's a C var that changes
     defcode("create",       CODE(CREATE),       0);
     defcode("find",         CODE(FIND),         0);
     defcode("variable",     CODE(VARIABLE),     0);
@@ -512,6 +510,11 @@ extern void start_forth(forth_config_t* config)
     // sys //
     defcode("bye",          CODE(BYE),          0);
     defcode("die",          CODE(DIE),          0);
+
+    // inner //
+    defcode("iword",            CODE(IWORD),            0);
+    // defcode("iexecute",     CODE(IEXECUTE),         0);
+    // defcode("execute",      CODE(EXECUTE),      0); // todo: vs builtin-exe vs iexe?
 
     // dbg //
     defcode("ps",           CODE(PRINT_STACK),  0);
