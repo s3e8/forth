@@ -3,3 +3,4 @@
 - move here_size to forth_config?
 - do i need init_dictionary or dictionary_state at all? is it useful to be able to initialize in main?
 - here  = dp here = dp @
+- change >mark to something like 0 >mark or x >mark???
