@@ -169,38 +169,35 @@ datahere0 !
 : pick 1+ cellsize * dsp@ + @ ;
 
 
+: ? @ . ;
+: ?iscall   >cfa @ ' call = ;
+
+: alias todo ;
 
 
 
 
 
 
-
-( sanakirjat )
+( dictionaries )
 variable current-vocab
 variable latest-defined-vocab
 
 0 current-vocab !
 0 latest-defined-vocab !
 
-: vocab-name ( vocabentry -- name ) cell+ @ ;
-: vocab-next ( vocabentry -- nextvocabentry/0 ) 2 cells + @ ;
-: vocab-latest ( vocab-entry -- latest ) @ ;
-: set-vocab-name ( name vocabentry -- ) cell+ ! ;
-: set-vocab-next ( nextentry vocabentry -- ) 2 cells + ! ;
-: set-vocab-latest ( latest vocabentry -- ) ! ;
-: vocab-useslist ( vocabentry -- useslist ) 3 cells + ;
+: vocab-name        ( vocabentry -- name )              cell+ @     ;
+: vocab-next        ( vocabentry -- nextvocabentry/0 )  2 cells + @ ;
+: vocab-latest      ( vocab-entry -- latest )           @           ;
+: set-vocab-name    ( name vocabentry -- )              cell+ !     ;
+: set-vocab-next    ( nextentry vocabentry -- )         2 cells + ! ;
+: set-vocab-latest  ( latest vocabentry -- )            !           ;
+: vocab-useslist    ( vocabentry -- useslist )          3 cells +   ;
 
 
 
 
-: ? @ . ;
-: ?iscall   >cfa @ ' call = ;
 
-
-
-
-: alias todo ;
 
 
 
