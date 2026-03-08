@@ -7,5 +7,6 @@
 #include "forth_ops_core_dict.h"
 #include "forth_ops_core_math.h"
 #include "forth_ops_core_sys.h"
+#include "forth_ops_core_string.h"
 #include "forth_ops_core_io.h"
 #include "forth_ops_core_dbg.h"

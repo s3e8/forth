@@ -480,6 +480,7 @@ extern void start_forth(forth_config_t* config)
     defcode("2dup",         CODE(2DUP),         0);
     defcode("2drop",        CODE(2DROP),        0);
     defcode("?dup",         CODE(CONDDUP),      0);
+    defcode("dsp@",         CODE(DSPFETCH),     0);
 
     // math //
     defcode("+",            CODE(ADD),          0);
@@ -525,6 +526,13 @@ extern void start_forth(forth_config_t* config)
     defcode("create",       CODE(CREATE),       0);
     defcode("find",         CODE(FIND),         0);
     defcode("variable",     CODE(VARIABLE),     0);
+
+    // string //
+    defcode("strcat",       CODE(STRCAT),       0);
+    defcode("strlen",       CODE(STRLEN),       0);
+    defcode("strncpy",      CODE(STRNCPY),      0);
+    defcode("strcpy",       CODE(STRCPY),       0);
+    defcode("strcmp",       CODE(STRCMP),       0);
 
     // sys //
     defcode("bye",          CODE(BYE),          0);

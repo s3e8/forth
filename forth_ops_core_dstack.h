@@ -124,3 +124,11 @@ BUILTIN(CONDDUP,
 // BUILTIN(SWAP, { a = POP(); b = POP(); PUSH(a); PUSH(b); })
 // BUILTIN(DROP, { ds++; })
 // BUILTIN(OVER, { tmp = AT(1); PUSH(tmp); })
+
+BUILTIN(DSPFETCH,
+{
+    printf("[ dsp@ ]\n");
+
+    tmp = (cell)ds;
+    PUSH(tmp);    
+})
