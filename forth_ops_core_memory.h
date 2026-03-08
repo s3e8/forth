@@ -38,7 +38,7 @@ BUILTIN(CFETCH,
 
 BUILTIN(MEMADD,
 {
-    cell *addr = (cell*)POP();
+    cell* addr = (cell*)POP();
     tmp = POP();
     *addr += tmp;    
 })

@@ -74,6 +74,14 @@ BUILTIN(EQ,
     AT(0) = AT(0) == tmp;
 })
 
+BUILTIN(NEQ,
+{
+    printf("[ <> ]\n");
+
+    tmp = POP();
+    AT(0) = AT(0) != tmp;  
+})
+
 BUILTIN(GT,
 {
     printf("[ > ]\n");

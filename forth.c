@@ -84,7 +84,8 @@ static char* get_next_line()
     if (!fgets(current_line, line_length, input_stream)) return NULL;
 
     remaining_words = current_line;
-    remaining_words[strcspn(remaining_words, "\n")] = '\0'; // todo: is this necessary? -- yes... change new line to termination character
+    // no, we need \n later
+    // remaining_words[strcspn(remaining_words, "\n")] = '\0'; // todo: is this necessary? -- yes... change new line to termination character
 
     return remaining_words;
 }
@@ -142,9 +143,21 @@ static char* get_next_word(char* tobuf)
 
 static int key()
 {
+    // if (*remaining_words == '\0')
+    // {
+    //     if (!get_next_line()) return -1;
+    // }
     if (*remaining_words == '\0')
     {
-        if (!get_next_line()) return -1;
+        if (!get_next_line())
+        {
+            if (input_stream != stdin)
+            {
+                input_stream = stdin;
+                if (!get_next_line()) return -1;
+            }
+            else return -1;
+        }
     }
 
     return *remaining_words++;
@@ -478,6 +491,7 @@ extern void start_forth(forth_config_t* config)
     defcode("1+",           CODE(ADD1),         0);
     defcode("1-",           CODE(SUB1),         0);
     defcode("=",            CODE(EQ),           0);
+    defcode("<>",           CODE(NEQ),          0);
     defcode(">",            CODE(GT),           0);
     defcode("<",            CODE(LT),           0);
     defcode(">=",           CODE(GTE),          0);
@@ -488,6 +502,9 @@ extern void start_forth(forth_config_t* config)
     defcode("0>=",          CODE(GTEZ),         0);
     defcode("0<=",          CODE(LTEZ),         0);
     defcode("0<>",          CODE(NEQZ),         0);
+    defcode("abs",          CODE(ABS),          0);
+    defcode("min",          CODE(MIN),          0);
+    defcode("max",          CODE(MAX),          0);
     // bitwise (bit ops?) //
     defcode("and",          CODE(AND),          0);
     defcode("or",           CODE(OR),           0);
