@@ -32,7 +32,6 @@ variable datahere0
 dup datahere !
 datahere0 !
 
-
 : >mark     here @ 0 ,    ;
 : >resolve  here @ swap ! ;
 
@@ -46,8 +45,6 @@ datahere0 !
 : repeat    '  branch , swap here @ - , dup here @ swap - swap !    ; immediate
 : recurse   '  call ,   latest @ >cfa ,                             ; immediate
 
-: inline    make-inline ; immediate
-
 : negate    0 swap - ; inline
 : true      1   ; inline
 : false     0   ; inline
@@ -57,6 +54,11 @@ datahere0 !
 : cells cellsize * ; inline
 : cell+ cellsize + ; inline
 : cell- cellsize - ; inline
+
+: str= 	inline strcmp 0= 	;
+: str< 	inline strcmp 0< 	;
+: str> 	inline strcmp 0> 	;
+: str<> inline strcmp 		;
 
 : ?builtin      @ f_builtin     and ;
 : ?hasarg       @ f_hasarg      and ;
@@ -79,8 +81,8 @@ datahere0 !
 :  bl       32      ; inline
 :  cr       10 emit ; inline
 : space     bl emit ; inline
-: spaces    begin dup 0 > while space 1 - repeat drop ;
-: crs       begin dup 0 > while cr    1 - repeat drop ;
+: spaces    begin dup 0> while space 1- repeat drop ;
+: crs       begin dup 0> while cr    1- repeat drop ;
 
 : char      word c@ ;
 : literal   ' lit , ,   ; immediate
@@ -194,9 +196,74 @@ variable latest-defined-vocab
 : set-vocab-latest  ( latest vocabentry -- )            !           ;
 : vocab-useslist    ( vocabentry -- useslist )          3 cells +   ;
 
+: find-vocabulary 					( name -- vocabulary/0 )
+    latest-defined-vocab @         	( name latestvocab )
+    begin
+	dup 0= if                  		\ is the entry zero?
+	    2drop 0 exit           		\ return zero
+	else
+	    2dup vocab-name str<>   	\ compare names
+	then
+    while
+	    vocab-next
+    repeat
+    nip
+;
 
+: in: immediate
+    word find-vocabulary
+    ?dup if
+	latest @ current-vocab @ set-vocab-latest   \ save latest to current vocabulary
+	dup current-vocab !                         \ this is the new current vocabulary
+	vocab-latest latest !                       \ get new latest from current vocabulary and save it to latest
+    else
+	." no such vocabulary" cr
+    then
+;
 
+: vocabulary immediate
+    word            ( vocabname )
+    make-const-str  ( constvocabname )
+    consthere @     ( constvocabname vocabulary )
+    2dup set-vocab-name   ( constvocabname vocabulary )
+    nip                   ( vocabulary )
 
+    current-vocab @       ( vocabulary currentvocab )
+    ?dup if
+	latest @ swap set-vocab-latest
+    then
+    latest-defined-vocab @  ( vocabulary latestvocab )
+    over set-vocab-next     ( vocabulary )  \ link them
+    latest @                ( vocabulary currlatest )
+    over set-vocab-latest   ( vocabulary )  \ save latest
+    dup latest-defined-vocab !  \ make it the last defined vocab
+    dup current-vocab !         \ it also becomes the current vocab like with in:
+    vocab-useslist consthere !       \ advance consthere
+;
+
+: use immediate
+    word find-vocabulary
+    ?dup if
+	const,
+    else
+	." no such vocabulary to use" cr
+    then
+;
+
+: definitions immediate
+    0 const,   \ terminate uses list
+;
+
+: vocabularies ( -- )
+    latest-defined-vocab @
+    begin
+	dup
+    while
+	    dup vocab-name tell space
+	    vocab-next
+    repeat
+    drop
+;
 
 
 
