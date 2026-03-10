@@ -32,7 +32,6 @@ typedef struct forth_config
     size_t rstack_size;
     size_t nstack_size;
     int    nstack_max_depth;
-    int    include_file_max_depth;
 } forth_config_t;
 
 /// reader ///
@@ -236,7 +235,8 @@ static word_header_t* find(const char* name)
     word_header_t* word = latest;
     while (word)
     {
-        if (!strncmp(word->name, name, WORDBUF_LENGTH))
+        if (!(word->flags & FLAG_HIDDEN) &&
+            !strncmp(word->name, name, WORDBUF_LENGTH))
             return word;
 
         word = word->next_word;
@@ -347,8 +347,6 @@ extern int init_forth(forth_config_t* config)
     // io buffers
     char* word_io_buffer = malloc(WORDBUF_LENGTH);
 
-    config->include_file_max_depth = NESTED_INCLUDE_MAX_DEPTH;
-
     config->dstack_size      = DATASTACK_SIZE;
     config->rstack_size      = RETURNSTACK_SIZE;
     config->nstack_size      = NESTINGSTACK_SIZE;
@@ -411,6 +409,9 @@ extern void start_forth(forth_config_t* config)
 
     /* ------------------------------------------------------ */
     /*     | name         | code              | flags         */
+
+    defcode("does>",    CODE(DOES),     0);
+    defcode("dodoes",   CODE(DODOES),   0);
     /// WORDS NEEDED FOR INNER INTERPRETER ///
     defcode("interpret",    CODE(INTERPRET),    0);
     defcode("branch",       CODE(BRANCH),       FLAG_HASARG);
@@ -551,6 +552,16 @@ extern void start_forth(forth_config_t* config)
     NEXT();
 
     return;
+
+    BUILTIN(DODOES,
+    {
+
+    })
+
+    BUILTIN(DOES,
+    {
+
+    })
 
     BUILTIN(DOCOL, 
     {

@@ -1,27 +1,15 @@
 : aligned   cellsize 1- + cellsize 1- invert and    ;
 : align     here @ aligned here !                   ;
 : allot     here @ swap here +! align               ;
+: c,        here @ c! here @ 1+ here ! 				;
 
-: make-inline
-    latest @ dup @ 
-    f_inline xor
-    swap !
-;
-: inline    make-inline ; immediate
-
-: make-variable
-    allot
-    word create make-inline
-    ' lit ,
-    ,
-    ' exit ,
-    ' eow ,
-;
-: variable cellsize make-variable ;
+: make-inline	latest @ dup @ f_inline xor swap ! 	;
+: inline    	make-inline 						; immediate
+: make-variable	allot word create make-inline ' lit , , ' exit , ' eow , 	;
+: variable cellsize make-variable 											;
 
 variable consthere
 variable consthere0
-
 4096 cellsize * allot
 dup consthere !
 consthere0 !
@@ -45,10 +33,10 @@ datahere0 !
 : repeat    '  branch , swap here @ - , dup here @ swap - swap !    ; immediate
 : recurse   '  call ,   latest @ >cfa ,                             ; immediate
 
-: negate    0 swap - ; inline
-: true      1   ; inline
-: false     0   ; inline
-: not       0=  ; inline
+: negate    0 swap - 	; inline
+: true      1   		; inline
+: false     0   		; inline
+: not       0=  		; inline
 
 : cell  cellsize   ; inline
 : cells cellsize * ; inline
@@ -60,15 +48,18 @@ datahere0 !
 : str> 	inline strcmp 0> 	;
 : str<> inline strcmp 		;
 
+: ? @ . ;
 : ?builtin      @ f_builtin     and ;
 : ?hasarg       @ f_hasarg      and ;
 : ?immediate    @ f_immediate   and ;
 : ?hidden       @ f_hidden      and ;
 : ?inline       @ f_inline      and ;
+: ?iscall   	>cfa @ ' call = 	;
 
 :  compile, dup ?builtin if >cfa @ , else ' call , >cfa , then  ;
 :  compile  word find compile,                                  ;
 : [compile] word find compile,                                  ; immediate
+: literal   ' lit , ,   										; immediate
 
 : unless    ' 0= , [compile] if                             ; immediate
 : case      0                                               ; immediate
@@ -85,7 +76,6 @@ datahere0 !
 : crs       begin dup 0> while cr    1- repeat drop ;
 
 : char      word c@ ;
-: literal   ' lit , ,   ; immediate
 : ':'   [ char : ] literal  ; inline 
 : ';'   [ char ; ] literal  ; inline 
 : '('   [ char ( ] literal  ; inline 
@@ -95,6 +85,9 @@ datahere0 !
 : '0'   [ char 0 ] literal  ; inline 
 : '-'   [ char - ] literal  ; inline 
 : '.'   [ char . ] literal  ; inline
+
+: decimal 	10 base ! ; immediate
+: hex 		16 base ! ; immediate
 
 : \ begin key '\n' <> while repeat ; immediate
 
@@ -118,11 +111,9 @@ datahere0 !
     drop
 ;
 
-: constalign consthere @ aligned consthere ! ;
-
-: c, here @ c! here @ 1+ here ! ;
-: const, consthere @ ! consthere @ cell+ consthere ! ;
-: constc, consthere @ c! consthere @ 1+ consthere ! ;
+: constalign 	consthere @ aligned consthere ! 			;
+: const, 		consthere @ ! consthere @ cell+ consthere ! ;
+: constc, 		consthere @ c! consthere @ 1+ consthere ! 	;
 
 : s" immediate
     state @ if            ( if compiling, emit a lit instruction with the starting pointer )
@@ -169,10 +160,6 @@ datahere0 !
 ;
 
 : pick 1+ cellsize * dsp@ + @ ;
-
-
-: ? @ . ;
-: ?iscall   >cfa @ ' call = ;
 
 : alias todo ;
 
@@ -264,6 +251,96 @@ variable latest-defined-vocab
     repeat
     drop
 ;
+
+
+/ print ds?
+: .ds ( -- )
+    dsp@
+    begin
+	dup s0 @ u<
+    while
+	    dup @ u.
+	    space
+	    cell+
+    repeat
+    drop
+;
+
+
+
+: uwidth ( u -- width )
+    base @ /
+    ?dup if
+	recurse 1+
+    else
+	1
+    then
+;
+
+: u.r ( u width -- )
+    swap
+    dup
+    uwidth
+    rot
+    swap -
+    spaces
+    u.
+;
+
+: .r
+    swap
+    dup 0< if
+	negate
+	1
+	swap
+	rot
+	1-
+    else
+	0 swap rot
+    then
+    swap
+    dup
+    uwidth
+    rot
+    swap -
+    spaces
+    swap
+    if
+	'-' emit
+    then
+    u.
+;
+
+: . 0 .r space ;
+: u. u. space ;
+
+( vocabulary-aware new version of find )
+: find ( wordname -- word )
+    dup find            ( wordname dictentry ) \ try to find from current latest first
+    ?dup if
+	nip exit
+    else
+	latest @                         ( wordname latest )
+	current-vocab @ vocab-useslist   ( wordname latest useslist )
+	begin
+	    dup @                        ( wordname latest useslist vocabentry/0 )
+	while
+		dup @ vocab-latest       ( wordname latest useslist usedlatest )
+		latest !                 ( wordname latest useslist )
+		2 pick                   ( wordname latest useslist wordname)
+		find                     ( wordname latest useslist word/0 )
+		?dup if
+		    nip over latest !
+		    2nip
+		    exit
+		else
+		    cell+
+		then
+	repeat
+	drop latest ! drop 0
+    then
+;
+
 
 
 
