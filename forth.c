@@ -48,10 +48,8 @@ static void init_reader_state(reader_state_t* state, char* wbuf, cell wbuf_size,
     state->stream             = fp;
     state->word_length        = wbuf_size;
     state->line_length        = lbuf_size;
-    state->current_word       = wbuf;
     state->current_line       = lbuf;
     state->current_line[0]    = '\0';
-    state->current_word[0]    = '\0';
     state->remaining_words    = lbuf;
 }
 
@@ -71,10 +69,8 @@ static reader_state_t* open_file(const char* filename, const char* mode)
     reader_state->stream            = fp;
     reader_state->line_length       = LINEBUF_LENGTH;
     reader_state->word_length       = WORDBUF_LENGTH;
-    reader_state->current_word      = wbuf;
     reader_state->current_line      = lbuf;
     reader_state->remaining_words   = lbuf;
-    reader_state->current_word[0]   = '\0';
     reader_state->current_line[0]   = '\0';
 
     return reader_state;
@@ -91,16 +87,6 @@ static void close_file(reader_state_t* reader_state)
     free(reader_state->current_line);
     free(reader_state);
 }
-
-// static FILE* input_stream;
-// static FILE* output_stream;
-// static cell  word_length        = WORDBUF_LENGTH;
-// static cell  line_length        = LINEBUF_LENGTH;
-// static char* wordbuf            = NULL;
-// static char* linebuf            = NULL;
-// static char* current_word       = NULL; // todo: init here?
-// static char* current_line       = NULL;
-// static char* remaining_words    = NULL;
 
 static void skip_whitespace(reader_state_t* reader_state) 
 {
@@ -373,6 +359,10 @@ void defvar(const char* name, cell value)
 extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_state, FILE* output_stream, int argc, char** argv)
 {
     cell*    s0 = ds;
+    cell*    t0 = NULL; // temp stack, to be later set in forth
+    cell*    ts = NULL;
+    float*   f0 = NULL;
+    float*   fs = NULL;
     void***  r0 = rs;
 
     void**   nestingstack_space[NESTINGSTACK_MAX_DEPTH];                 // i think this is for re-entering the interpreter after immediate execution??
@@ -406,8 +396,6 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     /* ------------------------------------------------------ */
     /*     | name         | code              | flags         */
 
-    defcode("does>",    CODE(DOES),     0);
-    defcode("dodoes",   CODE(DODOES),   0);
     /// WORDS NEEDED FOR INNER INTERPRETER ///
     defcode("interpret",    CODE(INTERPRET),    0);
     defcode("branch",       CODE(BRANCH),       FLAG_HASARG);
@@ -430,13 +418,22 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     defconst("cellsize",    (cell) sizeof(cell));
     defconst("floatsize",   (cell) sizeof(float));
     defconst("headersize",  (cell) sizeof(word_header_t));
-    // todo: make here... bytecode? like latest..
     defconst("here",        (cell) &here); // we give the address so we can store stuff there
     defconst("here0",       (cell) here0); // todo: why not &here0? cause malloc?
     defconst("s0",          (cell) &s0);
     defconst("r0",          (cell) &r0);
+    defconst("f0",          (cell) &f0);
+    defconst("t0",          (cell) &t0);
     defconst("state",       (cell) &state); // todo: should this be a const or a code...
     defconst("base",        (cell) &base);
+
+    // todo:
+    // defcode("does>",    CODE(DOES),     0);
+    // defcode("dodoes",   CODE(DODOES),   0);
+    // defcode("fsp!", CODE(SETFS), 0);
+    // defcode("fsp@", CODE(GETFS), 0);
+    // defcode("tsp!", CODE(SETT0), 0);
+    // defcode("tsp@", CODE(GETT0), 0);
 
     // control flow //
     defcode("0branch",      CODE(0BRANCH),          0);
@@ -548,117 +545,6 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     NEXT();
 
     return;
-
-    BUILTIN(DODOES,
-    {
-
-    })
-
-    BUILTIN(DOES,
-    {
-
-    })
-
-    BUILTIN(DOCOL, 
-    {
-        code = tick(header); // todo: rename code to xt?
-        *--nestingstack = ip;
-
-        if (header->flags & FLAG_BUILTIN)
-        {
-            code_immediatebuf[0] = code; // todo: or just put tick function here?
-            ip = code_immediatebuf;
-        } 
-        else {
-            word_immediatebuf[1] = code;
-            ip = word_immediatebuf;
-        }
-    })
-
-    BUILTIN(INTERPRET,
-    {
-        printf("[ interpret ]\n");
-        if (!get_next_word(reader_state, current_word))
-        {
-            if (is_eof(reader_state) && reader_state->stream != stdin) 
-                reader_state->stream = stdin; // todo: this still fires even if stream == stdin
-                
-            NEXT();
-        }
-
-        header = NULL;
-        header = find(current_word);
-
-        if (!header)
-        {
-            char* endptr = NULL;
-            cell number = (cell)strtol(current_word, &endptr, (int)base);
-
-            if (*endptr != '\0')
-            {
-                printf("unknown word: %s\n", current_word);
-                NEXT();
-            }
-            else {
-                if (state == STATE_COMPILE)
-                {
-                    comma((cell)CODE(LIT));
-                    comma((cell)number);
-                }
-                else if (state == STATE_IMMEDIATE) { PUSH(number); }
-                else { printf("error: Compiler state out of bounds. Should be either 0 or 1.\n"); return; }
-            }
-            
-            NEXT();
-        }
-
-        if (state == STATE_COMPILE && !(header->flags & FLAG_IMMEDIATE))
-        { // todo: use xt 'register'? 
-            if (header->flags & FLAG_BUILTIN) comma((cell)tick(header));
-            else {
-                comma((cell) CODE(CALL));
-                comma((cell)tick(header)); // todo: slarba for some reason uses CALL here... but CALL is already in word_immediatebuf...
-            }
-        }
-        else { /* state == STATE_IMMEDIATE || word->flags & FLAG_IMMEDIATE */
-            goto OP(DOCOL);
-        }         
-    })
-
-    BUILTIN(BRANCH,
-    {
-        printf("[ branch ]\n");
-        tmp = INTARG();
-        ip += (tmp / sizeof(void*)) - 1;
-    })
-
-    BUILTIN(CALL,
-    {
-        printf("[ call ]\n");
-        fn = ARG();
-        PUSHRS(ip);
-        ip = fn;
-    })
-
-    BUILTIN(LIT, 
-    {
-        printf("[ lit ]\n");
-        PUSH(INTARG());
-    })
-
-    BUILTIN(EOW, {})
-
-    BUILTIN(IRETURN,
-    {
-        printf("[ ireturn ]\n");
-        ip = *nestingstack++;
-    })
-
-    BUILTIN(EXIT,
-    {
-        printf("[ exit ]\n");
-        ip = POPRS();
-    })
 
     #include "forth_ops_core_all.h"
 }
