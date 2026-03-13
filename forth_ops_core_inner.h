@@ -24,7 +24,7 @@ BUILTIN(IWORD,
 {
     printf("[ iword ]\n");
 
-    PUSH(get_next_word(linebuf));
+    PUSH(get_next_word(reader_state, current_word));
 })
 
 // // todo: this is not for inner I dont think? 

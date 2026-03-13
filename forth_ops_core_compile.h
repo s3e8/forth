@@ -2,7 +2,7 @@ BUILTIN(COLON,
 {
     printf("[ colon ]\n");
 
-    get_next_word(current_word);
+    get_next_word(reader_state, current_word);
 
     create(current_word, 0);
     latest->flags |= FLAG_HIDDEN;
@@ -26,7 +26,7 @@ BUILTIN(SEMICOLON,
 BUILTIN(TICK,
 {
     header = NULL;
-    header = find( get_next_word(current_word) );
+    header = find( get_next_word(reader_state, current_word) );
     if (header)
     {
         xt = tick(header); // todo: can change to tmp register later...

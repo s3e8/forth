@@ -2,6 +2,7 @@ BUILTIN(DOT, {
     printf("[ . ]\n");
 
     cell val = POP();
+    goto OP(TODO);
     printf("%ld\n", (long)val);
 })
 
@@ -9,21 +10,21 @@ BUILTIN(WORD,
 {
     printf("[ word ]\n");
 
-    PUSH(get_next_word(wordbuf));
+    PUSH(get_next_word(reader_state, wordbuf));
 })
 
 BUILTIN(KEY,
 {
     printf("[ key ]\n");
 
-    PUSH(key());
+    PUSH(key(reader_state));
 })
 
 BUILTIN(EMIT,
 {
     printf("[ emit ]\n");
 
-    emit(POP());
+    emit(POP(), output_stream);
 })
 
 BUILTIN(TELL,

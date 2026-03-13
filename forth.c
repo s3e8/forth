@@ -14,7 +14,6 @@ typedef uintptr_t cell;
 /* -- io config */
 #define WORDBUF_LENGTH              128
 #define LINEBUF_LENGTH              512
-#define NESTED_INCLUDE_MAX_DEPTH    32
 /* -- dictionary config */
 #define DICTIONARY_SIZE             10*1024*1024 // 10mb
 /* -- todo: name other config stuff */
@@ -23,16 +22,16 @@ typedef uintptr_t cell;
 #define DATASTACK_SIZE              1024
 #define RETURNSTACK_SIZE            512
 
-typedef struct forth_config 
-{
-    size_t dictionary_size;
-    size_t wordbuf_length;
-    size_t linebuf_length;
-    size_t dstack_size;
-    size_t rstack_size;
-    size_t nstack_size;
-    int    nstack_max_depth;
-} forth_config_t;
+// typedef struct forth_config 
+// {
+//     size_t dictionary_size;
+//     size_t wordbuf_length;
+//     size_t linebuf_length;
+//     size_t dstack_size;
+//     size_t rstack_size;
+//     size_t nstack_size;
+//     int    nstack_max_depth;
+// } forth_config_t;
 
 /// reader ///
 typedef struct reader_state
@@ -45,51 +44,98 @@ typedef struct reader_state
     char* remaining_words;
 } reader_state_t;
 
-static FILE* input_stream;
-static FILE* output_stream;
-static cell  word_length        = WORDBUF_LENGTH;
-static cell  line_length        = LINEBUF_LENGTH;
-static char* wordbuf            = NULL;
-static char* linebuf            = NULL;
-static char* current_word       = NULL; // todo: init here?
-static char* current_line       = NULL;
-static char* remaining_words    = NULL;
-
-
-static void skip_whitespace() 
-{
-    while(isspace(*remaining_words)) remaining_words++;
+static void init_reader_state(reader_state_t* state, char* wbuf, cell wbuf_size, char* lbuf, cell lbuf_size, FILE* fp) {
+    state->stream             = fp;
+    state->word_length        = wbuf_size;
+    state->line_length        = lbuf_size;
+    state->current_word       = wbuf;
+    state->current_line       = lbuf;
+    state->current_line[0]    = '\0';
+    state->current_word[0]    = '\0';
+    state->remaining_words    = lbuf;
 }
 
-static cell is_eol()
+static reader_state_t* open_file(const char* filename, const char* mode)
 {
-    skip_whitespace();
-    return (cell)(*remaining_words == '\0');
+    FILE* fp = fopen(filename, mode);
+    if (!fp) return NULL;
+
+    char* lbuf = malloc(LINEBUF_LENGTH);
+    if (!lbuf) goto err_exit;
+    char* wbuf = malloc(LINEBUF_LENGTH);
+    if (!wbuf) goto err_exit;
+
+    reader_state_t* reader_state = malloc(sizeof(reader_state_t));
+    if (!reader_state) goto err_exit;
+
+    reader_state->stream            = fp;
+    reader_state->line_length       = LINEBUF_LENGTH;
+    reader_state->word_length       = WORDBUF_LENGTH;
+    reader_state->current_word      = wbuf;
+    reader_state->current_line      = lbuf;
+    reader_state->remaining_words   = lbuf;
+    reader_state->current_word[0]   = '\0';
+    reader_state->current_line[0]   = '\0';
+
+    return reader_state;
+
+    err_exit:
+        free(lbuf);
+        fclose(fp);
+        return NULL;
 }
 
-static cell is_eof()
+static void close_file(reader_state_t* reader_state)
 {
-    return (cell)(is_eol() && feof(input_stream));
+    if (reader_state->stream) fclose(reader_state->stream);
+    free(reader_state->current_line);
+    free(reader_state);
 }
 
-static char* get_next_line()
+// static FILE* input_stream;
+// static FILE* output_stream;
+// static cell  word_length        = WORDBUF_LENGTH;
+// static cell  line_length        = LINEBUF_LENGTH;
+// static char* wordbuf            = NULL;
+// static char* linebuf            = NULL;
+// static char* current_word       = NULL; // todo: init here?
+// static char* current_line       = NULL;
+// static char* remaining_words    = NULL;
+
+static void skip_whitespace(reader_state_t* reader_state) 
+{
+    while(isspace(*reader_state->remaining_words)) reader_state->remaining_words++;
+}
+
+static cell is_eol(reader_state_t* reader_state)
+{
+    skip_whitespace(reader_state);
+    return (cell)(*reader_state->remaining_words == '\0');
+}
+
+static cell is_eof(reader_state_t* reader_state)
+{
+    return (cell)(is_eol(reader_state) && feof(reader_state->stream));
+}
+
+static char* get_next_line(reader_state_t* reader_state)
 {
     printf("getting next line...\n");
-    if (input_stream == stdin)
+    if (reader_state->stream == stdin)
     {
         printf("forth> ");
         fflush(stdout);
     }
-    if (!fgets(current_line, line_length, input_stream)) return NULL;
+    if (!fgets(reader_state->current_line, reader_state->line_length, reader_state->stream)) return NULL;
 
-    remaining_words = current_line;
+    reader_state->remaining_words = reader_state->current_line;
     // no, we need \n later
     // remaining_words[strcspn(remaining_words, "\n")] = '\0'; // todo: is this necessary? -- yes... change new line to termination character
 
-    return remaining_words;
+    return reader_state->remaining_words;
 }
 
-static char* get_next_word(char* tobuf)
+static char* get_next_word(reader_state_t* reader_state, char* tobuf)
 {
     char* new_word_buffer = tobuf; // setting up a temp buffer to copy new word into current_word
 
@@ -97,16 +143,16 @@ static char* get_next_word(char* tobuf)
     while (1)
     {
         // Skip whitespace using isspace() for all whitespace characters
-        while (*remaining_words && isspace(*remaining_words))
+        while (*reader_state->remaining_words && isspace(*reader_state->remaining_words))
         { // todo: match with skip_whitespace
-            remaining_words++;
+            reader_state->remaining_words++;
         }
 
         // If we're at the end of the current buffer
-        if (*remaining_words == '\0')
+        if (*reader_state->remaining_words == '\0')
         {
             // printf("Buffer exhausted, getting next line...\n");
-            if (!get_next_line())
+            if (!get_next_line(reader_state))
             { 
                 // todo: should I set stream to stdin here?
                 // printf("No more lines, returning NULL\n");
@@ -122,9 +168,9 @@ static char* get_next_word(char* tobuf)
     }
 
     // // Copy word until whitespace or end of string
-    while (*remaining_words && !isspace(*remaining_words))
+    while (*reader_state->remaining_words && !isspace(*reader_state->remaining_words))
     {
-        *new_word_buffer++ = *remaining_words++;
+        *new_word_buffer++ = *reader_state->remaining_words++;
     }
 
     *new_word_buffer = '\0'; // todo: what's this doing?
@@ -140,48 +186,41 @@ static char* get_next_word(char* tobuf)
 //     return (*endptr == '\0' && endptr != token);
 // }
 
-static int key()
+static int key(reader_state_t* reader_state)
 {
     // if (*remaining_words == '\0')
     // {
     //     if (!get_next_line()) return -1;
     // }
-    if (*remaining_words == '\0')
+    if (*reader_state->remaining_words == '\0')
     {
-        if (!get_next_line())
+        if (!get_next_line(reader_state))
         {
-            if (input_stream != stdin)
+            if (reader_state->stream != stdin)
             {
-                input_stream = stdin;
-                if (!get_next_line()) return -1;
+                reader_state->stream = stdin;
+                if (!get_next_line(reader_state)) return -1;
             }
             else return -1;
         }
     }
 
-    return *remaining_words++;
+    return *reader_state->remaining_words++;
 }
 
 /* The primary data output function. This is the place to change if you want
 * to e.g. output data on a microcontroller via a serial interface. */ // todo: this applies less with current_stream global i think
-void emit(int c)
+void emit(int c, FILE* output_stream)
 {
     printf("int: %d\n", c);
     fputc(c, output_stream);
 }
 
-// /* C string output */
-// void tell(const char *str)
-// {
-//     while (*str)
-//         emit(*str++, current_stream);
-// }
-
-// /* toupper() clone so we don't have to pull in ctype.h */
-// char up(char c)
-// {
-//     return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
-// }
+/* toupper() clone so we don't have to pull in ctype.h */
+char up(char c) // todo: cell?
+{
+    return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
+}
 
 /// dictionary ///
 /// word header flags ///
@@ -311,57 +350,13 @@ void defvar(const char* name, cell value)
 #define PUSH(x)     (*--ds = (cell)(x))     // grow/decrement downward first, then store
 #define POP()       (*ds++)                 // pop, then shrink upward
 
-extern int init_forth(forth_config_t* config)
-{
-    if (!config) return 1;
+// extern void free_forth()
+// {
+//     free(here0);
 
-    here0  = malloc(DICTIONARY_SIZE);
-    here   = here0;
-    latest = NULL;
-
-    config->dictionary_size = DICTIONARY_SIZE;
-    config->wordbuf_length  = WORDBUF_LENGTH;
-    config->linebuf_length  = LINEBUF_LENGTH;
-
-    FILE* bootstrap = fopen("forth.f", "r");
-    if (!bootstrap) {
-        // fprintf(stderr, "Cannot open file: %s\n", bootstrap);
-        // fprintf(stderr, "Falling back to stdin\n");
-        bootstrap = stdin;
-    }
-
-    input_stream  = bootstrap;
-    output_stream = stdout;
-    word_length     = WORDBUF_LENGTH;
-    line_length     = LINEBUF_LENGTH;
-    wordbuf         = malloc(word_length);
-    linebuf         = malloc(line_length);
-    current_word    = malloc(word_length);
-    current_line    = malloc(line_length);
-    wordbuf[0]      = '\0';
-    linebuf[0]      = '\0';
-    current_word[0] = '\0';
-    current_line[0] = '\0';
-    remaining_words = current_line;
-
-    // io buffers
-    char* word_io_buffer = malloc(WORDBUF_LENGTH);
-
-    config->dstack_size      = DATASTACK_SIZE;
-    config->rstack_size      = RETURNSTACK_SIZE;
-    config->nstack_size      = NESTINGSTACK_SIZE;
-    config->nstack_max_depth = NESTINGSTACK_MAX_DEPTH;
-
-    return 0;
-}
-
-extern void free_forth()
-{
-    free(here0);
-
-    free(current_word);
-    free(current_line);
-}
+//     free(current_word);
+//     free(current_line);
+// }
 
 // helper macros //
 #define OP(name) op_##name
@@ -374,18 +369,14 @@ extern void free_forth()
 #define ALIGN_ADDR(addr)  ((cell)((addr) + CELL_MASK) &  ~CELL_MASK)
 #define OFFSET(x)  (void*)((x) * sizeof(cell)) // todo: or (x) * sizeof...? // to calculate branch offsets
 
-extern void start_forth(forth_config_t* config)
+// void **ip, cell *ds, void ***rs, reader_state_t *inputstate, FILE *outp, int argc, char **argv
+extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_state, FILE* output_stream, int argc, char** argv)
 {
-    cell     datastack[config->dstack_size];
-    void**   returnstack[config->rstack_size];
-    cell*    s0 = datastack   + config->dstack_size;
-    void***  r0 = returnstack + config->rstack_size;
-    cell*    ds = s0;
-    void***  rs = r0;
+    cell*    s0 = ds;
+    void***  r0 = rs;
 
-    void**   ip = NULL;
-    void**   nestingstack_space[config->nstack_max_depth];                 // i think this is for re-entering the interpreter after immediate execution??
-    void***  nestingstack = nestingstack_space + config->nstack_max_depth; // ... as opposed to rs which is for lots of stuff // todo: rename to ns?
+    void**   nestingstack_space[NESTINGSTACK_MAX_DEPTH];                 // i think this is for re-entering the interpreter after immediate execution??
+    void***  nestingstack = nestingstack_space + NESTINGSTACK_MAX_DEPTH; // ... as opposed to rs which is for lots of stuff // todo: rename to ns?
 
     // some default vars and constants
     cell base  = 10;
@@ -406,6 +397,11 @@ extern void start_forth(forth_config_t* config)
     void* code_immediatebuf[] = { NULL, CODE(IRETURN) };                                  // todo: do i need to put length inside immediatebuf[2] etc
     void* word_immediatebuf[] = { CODE(CALL), NULL, CODE(IRETURN) };                      //
     void* quit[]              = { CODE(INTERPRET),  CODE(BRANCH), OFFSET(-2), CODE(EOW) }; /* the interpreter loop */
+
+    char            current_word[LINEBUF_LENGTH];
+    char            wordbuf[WORDBUF_LENGTH];
+    char            stdinbuf[1024];
+    reader_state_t  stdin_state;
 
     /* ------------------------------------------------------ */
     /*     | name         | code              | flags         */
@@ -582,10 +578,10 @@ extern void start_forth(forth_config_t* config)
     BUILTIN(INTERPRET,
     {
         printf("[ interpret ]\n");
-        if (!get_next_word(current_word))
+        if (!get_next_word(reader_state, current_word))
         {
-            if (is_eof() && input_stream != stdin) 
-                input_stream = stdin; // todo: this still fires even if stream == stdin
+            if (is_eof(reader_state) && reader_state->stream != stdin) 
+                reader_state->stream = stdin; // todo: this still fires even if stream == stdin
                 
             NEXT();
         }
@@ -669,11 +665,22 @@ extern void start_forth(forth_config_t* config)
 
 int main(int argc, char** argv)
 {
-    forth_config_t forth_config;
-    init_forth(&forth_config);
+    cell    datastack[1024];
+    void**  returnstack[512];
+
+    reader_state_t *fp = open_file("forth.f", "r");
+    if(!fp) {
+        fprintf(stderr, "Cannot open bootstrap file forth.f!\n");
+        return 1;
+    }
+
+    here_size   = 10*1024*1024;
+    here0       = malloc(here_size);
+    here        = here0;
+    start_forth(NULL, datastack+1024, returnstack+512, fp, stdout, argc, argv);
+    close_file(fp);
     // todo: ideally we can defcode some more stuff here... 
-    start_forth(&forth_config);
-    free_forth();
+
     
     return 0;
 }

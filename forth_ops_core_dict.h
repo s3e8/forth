@@ -24,7 +24,7 @@ BUILTIN(VARIABLE, {
     
     printf("[ variable ]\n");
 
-    char* name = get_next_word(current_word); // todo: or wordbuf
+    char* name = get_next_word(reader_state, current_word); // todo: or wordbuf
     if (!name)
     {
         printf("Error: No name for variable\n");
