@@ -336,14 +336,6 @@ void defvar(const char* name, cell value)
 #define PUSH(x)     (*--ds = (cell)(x))     // grow/decrement downward first, then store
 #define POP()       (*ds++)                 // pop, then shrink upward
 
-// extern void free_forth()
-// {
-//     free(here0);
-
-//     free(current_word);
-//     free(current_line);
-// }
-
 // helper macros //
 #define OP(name) op_##name
 #define CODE(name) &&op_##name
@@ -422,7 +414,7 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     defconst("here0",       (cell) here0); // todo: why not &here0? cause malloc?
     defconst("s0",          (cell) &s0);
     defconst("r0",          (cell) &r0);
-    defconst("f0",          (cell) &f0);
+    defconst("f0",          (cell) &f0); // todo... why not define fs/ts?
     defconst("t0",          (cell) &t0);
     defconst("state",       (cell) &state); // todo: should this be a const or a code...
     defconst("base",        (cell) &base);
@@ -432,8 +424,16 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     // defcode("dodoes",   CODE(DODOES),   0);
     // defcode("fsp!", CODE(SETFS), 0);
     // defcode("fsp@", CODE(GETFS), 0);
-    // defcode("tsp!", CODE(SETT0), 0);
+    // defcode("tsp!", CODE(SETT0), 0); gett0 or getts?
     // defcode("tsp@", CODE(GETT0), 0);
+    // defcode("2nip",     CODE(2NIP),     0);  // used in new find
+    // defcode("execute",  CODE(EXECUTE),  0);  // needed for interpret rewrite
+    // defcode("number",   CODE(PARSENUM), 0);  // needed for interpret rewrite
+    // defcode("open-file",  CODE(OPENFILE),  0);
+    // defcode("close-file", CODE(CLOSEFILE), 0);
+    // defcode("?eof",       CODE(ISEOF),     0);
+    // defcode("?eol",       CODE(ISEOL),     0);
+    // defcode("depth",      CODE(DEPTH),     0);  // or define in forth
 
     // control flow //
     defcode("0branch",      CODE(0BRANCH),          0);
@@ -520,6 +520,7 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     defcode("create",       CODE(CREATE),       0);
     defcode("find",         CODE(FIND),         0);
     defcode("variable",     CODE(VARIABLE),     0);
+    defcode("hidden",       CODE(HIDDEN),       0);
 
     // string //
     defcode("strcat",       CODE(STRCAT),       0);
@@ -554,8 +555,8 @@ int main(int argc, char** argv)
     cell    datastack[1024];
     void**  returnstack[512];
 
-    reader_state_t *fp = open_file("forth.f", "r");
-    if(!fp) {
+    reader_state_t* input_state = open_file("forth.f", "r");
+    if(!input_state) {
         fprintf(stderr, "Cannot open bootstrap file forth.f!\n");
         return 1;
     }
@@ -563,8 +564,8 @@ int main(int argc, char** argv)
     here_size   = 10*1024*1024;
     here0       = malloc(here_size);
     here        = here0;
-    start_forth(NULL, datastack+1024, returnstack+512, fp, stdout, argc, argv);
-    close_file(fp);
+    start_forth(NULL, datastack+1024, returnstack+512, input_state, stdout, argc, argv);
+    close_file(input_state);
     // todo: ideally we can defcode some more stuff here... 
 
     

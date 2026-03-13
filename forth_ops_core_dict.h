@@ -35,3 +35,9 @@ BUILTIN(VARIABLE, {
 
     defvar(name, (cell)NULL); // todo: change to 0???
 })
+
+BUILTIN(HIDDEN,
+{
+    word_header_t* hdr = (word_header_t*)POP();
+    hdr->flags ^= FLAG_HIDDEN;    
+})
