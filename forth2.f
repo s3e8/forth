@@ -503,3 +503,40 @@ find-first-builtin
 \ s" hello" make-const-str
 \ both should return same region of consthere, different addresses though
 \ interning in Lisp gives SAME address, yours gives different - note the difference
+
+
+
+variable symbol-table
+1024 cells allot symbol-table !
+
+: symbol-hash ( str -- index )
+    0 swap
+    begin dup c@ while
+        swap 31 * swap c@ + swap
+        1+
+    repeat
+    drop
+    1024 mod
+;
+
+: intern-sym ( str -- sym )
+    \ hash the string
+    \ probe the table
+    \ if found return existing
+    \ if not found store and return new
+;
+
+: intern-str ( str -- conststr )
+    consthere0 @          \ start at beginning of const region
+    begin
+        dup consthere @ <  \ while not at end
+    while
+        2dup str= if       \ found it?
+            nip exit       \ return existing address
+        then
+        dup strlen 1+      \ advance past this string
+        aligned +          \ keep aligned
+    repeat
+    drop                   \ not found, copy it in
+    make-const-str
+;

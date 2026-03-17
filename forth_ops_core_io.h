@@ -1,35 +1,35 @@
 BUILTIN(DOT, {
-    printf("[ . ]\n");
+    // printf("[ . ]\n");
 
     cell val = POP();
-    goto OP(TODO);
+    // goto OP(TODO);
     printf("%ld\n", (long)val);
 })
 
 BUILTIN(WORD,
 {
-    printf("[ word ]\n");
+    // printf("[ word ]\n");
 
     PUSH(get_next_word(reader_state, wordbuf));
 })
 
 BUILTIN(KEY,
 {
-    printf("[ key ]\n");
+    // printf("[ key ]\n");
 
     PUSH(key(reader_state));
 })
 
 BUILTIN(EMIT,
 {
-    printf("[ emit ]\n");
+    // printf("[ emit ]\n");
 
     emit(POP(), output_stream);
 })
 
 BUILTIN(TELL,
 {
-    printf("[ tell ]\n");
+    // printf("[ tell ]\n");
 
     fputs((char*)POP(), output_stream);
 })

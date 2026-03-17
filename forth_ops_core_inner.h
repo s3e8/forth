@@ -27,7 +27,7 @@ BUILTIN(DOCOL,
 
 BUILTIN(INTERPRET,
 {
-    printf("[ interpret ]\n");
+    // printf("[ interpret ]\n");
     if (!get_next_word(reader_state, current_word))
     {
         if (is_eof(reader_state) && reader_state->stream != stdin) 
@@ -77,14 +77,14 @@ BUILTIN(INTERPRET,
 
 BUILTIN(BRANCH,
 {
-    printf("[ branch ]\n");
+    // printf("[ branch ]\n");
     tmp = INTARG();
     ip += (tmp / sizeof(void*)) - 1;
 })
 
 BUILTIN(CALL,
 {
-    printf("[ call ]\n");
+    // printf("[ call ]\n");
     fn = ARG();
     PUSHRS(ip);
     ip = fn;
@@ -92,7 +92,7 @@ BUILTIN(CALL,
 
 BUILTIN(LIT, 
 {
-    printf("[ lit ]\n");
+    // printf("[ lit ]\n");
     PUSH(INTARG());
 })
 
@@ -100,13 +100,13 @@ BUILTIN(EOW, {})
 
 BUILTIN(IRETURN,
 {
-    printf("[ ireturn ]\n");
+    // printf("[ ireturn ]\n");
     ip = *nestingstack++;
 })
 
 BUILTIN(EXIT,
 {
-    printf("[ exit ]\n");
+    // printf("[ exit ]\n");
     ip = POPRS();
 })
 
@@ -114,7 +114,7 @@ BUILTIN(EXIT,
 
 BUILTIN(EXECUTE, // exec-word
 {
-    printf("[ execute ]\n");
+    // printf("[ execute ]\n");
 
     PUSHRS(ip);
     ip = (void**)POP();
@@ -128,7 +128,7 @@ BUILTIN(EXECUTE, // exec-word
 
 BUILTIN(JUMP,
 {
-    printf("[ jump ]\n");
+    // printf("[ jump ]\n");
 
     void *fn = ARG();
     ip = fn;
@@ -136,7 +136,7 @@ BUILTIN(JUMP,
 
 BUILTIN(IWORD,
 {
-    printf("[ iword ]\n");
+    // printf("[ iword ]\n");
 
     PUSH(get_next_word(reader_state, current_word));
 })

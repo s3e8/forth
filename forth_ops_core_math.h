@@ -1,6 +1,6 @@
 BUILTIN(ADD,
 {
-    printf("[ + ]\n");
+    // printf("[ + ]\n");
 
     tmp = POP();
     AT(0) += tmp;
@@ -12,7 +12,7 @@ BUILTIN(ADD,
 
 BUILTIN(SUB,
 {
-    printf("[ - ]\n");
+    // printf("[ - ]\n");
 
     tmp = POP();
     AT(0) -= tmp;   
@@ -20,7 +20,7 @@ BUILTIN(SUB,
 
 BUILTIN(MUL,
 {
-    printf("[ * ]\n");
+    // printf("[ * ]\n");
 
     tmp = POP();
     AT(0) *= tmp;   
@@ -28,7 +28,7 @@ BUILTIN(MUL,
 
 BUILTIN(DIV,
 {
-    printf("[ / ]\n");
+    // printf("[ / ]\n");
 
     tmp = POP();
     AT(0) /= tmp;  
@@ -36,7 +36,7 @@ BUILTIN(DIV,
 
 BUILTIN(MOD,
 {
-    printf("[ mod ]\n");
+    // printf("[ mod ]\n");
 
     tmp = POP();
     AT(0) = AT(0) % tmp;    
@@ -44,7 +44,7 @@ BUILTIN(MOD,
 
 BUILTIN(DIVMOD,
 {
-    printf("[ /mod ]\n");
+    // printf("[ /mod ]\n");
 
     cell a = POP();
     cell b = POP();
@@ -54,21 +54,21 @@ BUILTIN(DIVMOD,
 
 BUILTIN(ADD1,
 {
-    printf("[ 1+ ]\n");
+    // printf("[ 1+ ]\n");
 
     AT(0) += 1;
 })
 
 BUILTIN(SUB1,
 {
-    printf("[ 1+ ]\n");
+    // printf("[ 1+ ]\n");
 
     AT(0) -= 1;
 })
 
 BUILTIN(EQ,
 {
-    printf("[ = ]\n");
+    // printf("[ = ]\n");
 
     tmp = POP(); 
     AT(0) = AT(0) == tmp;
@@ -76,7 +76,7 @@ BUILTIN(EQ,
 
 BUILTIN(NEQ,
 {
-    printf("[ <> ]\n");
+    // printf("[ <> ]\n");
 
     tmp = POP();
     AT(0) = AT(0) != tmp;  
@@ -84,7 +84,7 @@ BUILTIN(NEQ,
 
 BUILTIN(GT,
 {
-    printf("[ > ]\n");
+    // printf("[ > ]\n");
 
     tmp = POP();
     AT(0) = AT(0) > tmp;   
@@ -92,7 +92,7 @@ BUILTIN(GT,
 
 BUILTIN(LT,
 {
-    printf("[ < ]\n");
+    // printf("[ < ]\n");
 
     tmp = POP();
     AT(0) = AT(0) > tmp;   
@@ -100,7 +100,7 @@ BUILTIN(LT,
 
 BUILTIN(LTE,
 {
-    printf("[ <= ]\n");
+    // printf("[ <= ]\n");
 
     tmp = POP();
     AT(0) = AT(0) <= tmp;   
@@ -108,7 +108,7 @@ BUILTIN(LTE,
 
 BUILTIN(GTE,
 {
-    printf("[ >= ]\n");
+    // printf("[ >= ]\n");
 
     tmp = POP();
     AT(0) = AT(0) >= tmp;   
@@ -116,35 +116,35 @@ BUILTIN(GTE,
 
 BUILTIN(EQZ,
 {
-    printf("[ 0= ]\n");
+    // printf("[ 0= ]\n");
 
     AT(0) = AT(0)==0;
 })
 
 BUILTIN(GTZ,
 {
-    printf("[ 0> ]\n");
+    // printf("[ 0> ]\n");
 
     AT(0) = AT(0) > 0;
 })
 
 BUILTIN(LTZ,
 {
-    printf("[ 0< ]\n");
+    // printf("[ 0< ]\n");
 
     AT(0) = AT(0) < 0;
 })
 
 BUILTIN(GTEZ,
 {
-    printf("[ 0>= ]\n");
+    // printf("[ 0>= ]\n");
 
     AT(0) = AT(0) >= 0;
 })
 
 BUILTIN(LTEZ,
 {
-    printf("[ 0<= ]\n");
+    // printf("[ 0<= ]\n");
 
     AT(0) = AT(0) <= 0;
 })
@@ -152,7 +152,7 @@ BUILTIN(LTEZ,
 
 BUILTIN(NEQZ,
 {
-    printf("[ 0<> ]\n");
+    // printf("[ 0<> ]\n");
 
     AT(0) = AT(0)!=0;
 })
@@ -163,14 +163,14 @@ BUILTIN(NEQZ,
 
 BUILTIN(ABS,
 {
-    printf("[ abs ]\n");
+    // printf("[ abs ]\n");
 
     if ((cell)TOP() < 0) AT(0) = -AT(0);
 })
 
 BUILTIN(MIN,
 {
-    printf("[ min ]\n");
+    // printf("[ min ]\n");
 
     tmp = POP();
     if (tmp < TOP()) AT(0) = tmp;
@@ -178,7 +178,7 @@ BUILTIN(MIN,
 
 BUILTIN(MAX,
 {
-    printf("[ max ]\n");
+    // printf("[ max ]\n");
 
     tmp = POP();
     if (tmp > TOP()) AT(0) = tmp;
@@ -188,7 +188,7 @@ BUILTIN(MAX,
 // bitwise //
 BUILTIN(AND,
 {
-    printf("[ and ]\n");
+    // printf("[ and ]\n");
     
     tmp = POP();
     AT(0) &= tmp;   
@@ -196,7 +196,7 @@ BUILTIN(AND,
 
 BUILTIN(OR,
 {
-    printf("[  or ]\n");
+    // printf("[  or ]\n");
 
     tmp = POP();
     AT(0) |= tmp;
@@ -204,7 +204,7 @@ BUILTIN(OR,
 
 BUILTIN(XOR,
 {
-    printf("[ xor ]\n");
+    // printf("[ xor ]\n");
 
     tmp = POP();
     AT(0) ^= tmp; 
@@ -212,14 +212,14 @@ BUILTIN(XOR,
 
 BUILTIN(NEG,
 {
-    printf("[ invert ]\n");
+    // printf("[ invert ]\n");
 
     AT(0) = ~AT(0); 
 })
 
 BUILTIN(LSHIFT,
 {
-    printf("[ lshift ]\n");
+    // printf("[ lshift ]\n");
 
     tmp = POP();
     AT(0) <<= tmp;  
@@ -227,7 +227,7 @@ BUILTIN(LSHIFT,
 
 BUILTIN(RSHIFT,
 {
-    printf("[ rshift ]\n");
+    // printf("[ rshift ]\n");
 
     tmp = POP();
     AT(0) >>= tmp;  

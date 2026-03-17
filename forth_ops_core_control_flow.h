@@ -1,6 +1,6 @@
 BUILTIN(0BRANCH,
 {
-    printf("[ 0branch ]\n");
+    // printf("[ 0branch ]\n");
 
     tmp = INTARG();
 
