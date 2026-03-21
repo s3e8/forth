@@ -294,14 +294,15 @@ BUILTIN(U_GTE,
 
 
 // */ -- ( n1 n2 n3 — n4 )
-BUITIN(MUL_DIV,
+BUILTIN(MUL_DIV,
 {
-
+    goto OP(TODO);
 })
 
 // */MOD -- ( n1 n2 n3 — n4 n5 )
 BUILTIN(MUL_DIV_MOD,
 {
+    goto OP(TODO);
 })
 // +Loop
 // leave

@@ -19,7 +19,7 @@ BUILTIN(SEMICOLON,
     comma((cell)getcode("exit")); // todo: why cant I use OP(EXIT)?
     latest->flags &= ~FLAG_HIDDEN; // todo: I forgot what's happening here
 
-    printf("finished compiling word: '%s'\n", latest->name);
+    // printf("finished compiling word: '%s'\n", latest->name);
     state = STATE_IMMEDIATE;
 })
 
