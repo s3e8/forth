@@ -1,7 +1,7 @@
 /* yet another attempt */
 
 #include <stdio.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h> // todo: impl own isspace
 
@@ -11,27 +11,13 @@ typedef uintptr_t cell;
 
 /* config defaults --------------------------------- */
 #define FORTH_VERSION               0
-/* -- io config */
 #define WORDBUF_LENGTH              128
 #define LINEBUF_LENGTH              512
-/* -- dictionary config */
 #define DICTIONARY_SIZE             10*1024*1024 // 10mb
-/* -- todo: name other config stuff */
 #define NESTINGSTACK_MAX_DEPTH      512
 #define NESTINGSTACK_SIZE           512
 #define DATASTACK_SIZE              1024
 #define RETURNSTACK_SIZE            512
-
-// typedef struct forth_config 
-// {
-//     size_t dictionary_size;
-//     size_t wordbuf_length;
-//     size_t linebuf_length;
-//     size_t dstack_size;
-//     size_t rstack_size;
-//     size_t nstack_size;
-//     int    nstack_max_depth;
-// } forth_config_t;
 
 /// reader ///
 typedef struct reader_state
@@ -44,6 +30,7 @@ typedef struct reader_state
     char* remaining_words;
 } reader_state_t;
 
+
 static void init_reader_state(reader_state_t* state, char* wbuf, cell wbuf_size, char* lbuf, cell lbuf_size, FILE* fp) {
     state->stream             = fp;
     state->word_length        = wbuf_size;
@@ -52,6 +39,7 @@ static void init_reader_state(reader_state_t* state, char* wbuf, cell wbuf_size,
     state->current_line[0]    = '\0';
     state->remaining_words    = lbuf;
 }
+
 
 static reader_state_t* open_file(const char* filename, const char* mode)
 {
@@ -81,6 +69,7 @@ static reader_state_t* open_file(const char* filename, const char* mode)
         return NULL;
 }
 
+
 static void close_file(reader_state_t* reader_state)
 {
     if (reader_state->stream) fclose(reader_state->stream);
@@ -88,10 +77,12 @@ static void close_file(reader_state_t* reader_state)
     free(reader_state);
 }
 
-static void skip_whitespace(reader_state_t* reader_state) 
+
+static void skip_whitespace(reader_state_t* reader_state)
 {
     while(isspace(*reader_state->remaining_words)) reader_state->remaining_words++;
 }
+
 
 static cell is_eol(reader_state_t* reader_state)
 {
@@ -99,14 +90,16 @@ static cell is_eol(reader_state_t* reader_state)
     return (cell)(*reader_state->remaining_words == '\0');
 }
 
+
 static cell is_eof(reader_state_t* reader_state)
 {
     return (cell)(is_eol(reader_state) && feof(reader_state->stream));
 }
 
+
 static char* get_next_line(reader_state_t* reader_state)
 {
-    printf("getting next line...\n");
+    // printf("getting next line...\n");
     if (reader_state->stream == stdin)
     {
         printf("forth> ");
@@ -120,6 +113,7 @@ static char* get_next_line(reader_state_t* reader_state)
 
     return reader_state->remaining_words;
 }
+
 
 static char* get_next_word(reader_state_t* reader_state, char* tobuf)
 {
@@ -139,7 +133,7 @@ static char* get_next_word(reader_state_t* reader_state, char* tobuf)
         {
             // printf("Buffer exhausted, getting next line...\n");
             if (!get_next_line(reader_state))
-            { 
+            {
                 // todo: should I set stream to stdin here?
                 // printf("No more lines, returning NULL\n");
                 tobuf[0] = '\0';
@@ -167,17 +161,13 @@ static char* get_next_word(reader_state_t* reader_state, char* tobuf)
 // static cell is_number(const char* token, cell result, cell base) {
 //     char *endptr; // todo: token is current_work, remove arg
 //     result = (cell)strtol(token, &endptr, (int)base);
-    
+
 //     // Success if we consumed the whole string and it wasn't empty
 //     return (*endptr == '\0' && endptr != token);
 // }
 
 static int key(reader_state_t* reader_state)
 {
-    // if (*remaining_words == '\0')
-    // {
-    //     if (!get_next_line()) return -1;
-    // }
     if (*reader_state->remaining_words == '\0')
     {
         if (!get_next_line(reader_state))
@@ -194,13 +184,13 @@ static int key(reader_state_t* reader_state)
     return *reader_state->remaining_words++;
 }
 
-/* The primary data output function. This is the place to change if you want
-* to e.g. output data on a microcontroller via a serial interface. */ // todo: this applies less with current_stream global i think
+
 void emit(int c, FILE* output_stream)
 {
-    printf("int: %d\n", c);
+    // printf("int: %d\n", c);
     fputc(c, output_stream);
 }
+
 
 /* toupper() clone so we don't have to pull in ctype.h */
 char up(char c) // todo: cell?
@@ -208,8 +198,16 @@ char up(char c) // todo: cell?
     return (c >= 'a' && c <= 'z') ? c - 'a' + 'A' : c;
 }
 
+
+
+
+
+
+
+
+
+
 /// dictionary ///
-/// word header flags ///
 #define BIT(x) (1<<(x))
 #define FLAG_HIDDEN     BIT(0)
 #define FLAG_IMMEDIATE  BIT(1)
@@ -217,9 +215,10 @@ char up(char c) // todo: cell?
 #define FLAG_HASARG     BIT(3)
 #define FLAG_INLINE     BIT(4)
 #define FLAG_DEFERRED   BIT(5)
-/// compiler state ///
+
 #define STATE_IMMEDIATE 0
 #define STATE_COMPILE   1
+
 
 typedef struct word_header
 {
@@ -228,11 +227,13 @@ typedef struct word_header
     char                name[WORDBUF_LENGTH];
 } word_header_t;
 
+
 /* file-global dictionary vars */
 static void*            here;
 static void*            here0;
 static cell             here_size = DICTIONARY_SIZE;
 static word_header_t*   latest = NULL;
+
 
 static word_header_t* create(const char* name, cell flags)
 {
@@ -249,9 +250,10 @@ static word_header_t* create(const char* name, cell flags)
 
     latest = new_word;
     // todo: error case if no new word is created?
-    
+
     return new_word;
 }
+
 
 static word_header_t* find(const char* name)
 {
@@ -270,10 +272,12 @@ static word_header_t* find(const char* name)
     return NULL;
 }
 
+
 static void** cfa(word_header_t* word)
 {   /* void** is a ptr to a code array */
     return (void**)(word + 1);
 }
+
 
 static void* tick(word_header_t* word)
 {   /* void** is a ptr to a code array */
@@ -281,11 +285,13 @@ static void* tick(word_header_t* word)
     else                            return  cfa(word);
 }
 
+
 static void comma(cell value)
 {
     *(cell*)here = value;
     here += sizeof(cell);
 }
+
 
 /* bootstrap utility functions */
 void* getcode(const char* name)
@@ -323,18 +329,46 @@ void defvar(const char* name, cell value)
     defconst(name, address);
 }
 
+void deffconst(const char* name, cell value)
+{   // todo: better name for flagdef?
+    void* flagdef[] = { getcode("flit"), (void*)value, getcode("exit") };
+    defword(name, flagdef, 3, FLAG_INLINE);
+}
+
+
+
+
+
+
+
+
+
+
 /// vm ///
 #define NEXT() goto *(*ip++)  // todo: why ** //
 
-#define ARG()       (*ip++)                 // takes the next item on the ip thread as
-#define INTARG()    ((cell)(*ip++))         // takes the next item on the ip thread as an int argument, casted as (cell) cause... forth
 #define PUSHRS(x)   (*--rs = (void**)(x))   // grow/decrement downward first, then store
 #define POPRS()     (*rs++)                 // pop, then shrink upward
+
 #define TOP()       (*ds)
 #define PEEK()      (*(ds-1)) // slarba uses TOP() for dup... why must i use this instead when I've basically modelled everything after what he's doing?
 #define AT(x)       (*(ds+(x))) // todo: what's this?
 #define PUSH(x)     (*--ds = (cell)(x))     // grow/decrement downward first, then store
 #define POP()       (*ds++)                 // pop, then shrink upward
+
+#define FTOP()      (*fs)
+#define FPEEK()     (*(fs-1)) // slarba uses TOP() for dup... why must i use this instead when I've basically modelled everything after what he's doing?
+#define FAT(x)      (*(fs+(x)))
+#define FPUSH(x)     *--fs = (float)(x)
+#define FPOP()       (*fs++)
+
+#define ARG()       (*ip++)                 // takes the next item on the ip thread as
+#define INTARG()    ((cell)(*ip++))         // takes the next item on the ip thread as an int argument, casted as (cell) cause... forth
+#define FLOATARG()  (*(float*)ip)
+
+
+
+
 
 // helper macros //
 #define OP(name) op_##name
@@ -346,6 +380,14 @@ void defvar(const char* name, cell value)
 #define IS_ALIGNED(addr) (((cell) (addr) & CELL_MASK) == 0)
 #define ALIGN_ADDR(addr)  ((cell)((addr) + CELL_MASK) &  ~CELL_MASK)
 #define OFFSET(x)  (void*)((x) * sizeof(cell)) // todo: or (x) * sizeof...? // to calculate branch offsets
+
+
+
+
+
+
+
+
 
 // void **ip, cell *ds, void ***rs, reader_state_t *inputstate, FILE *outp, int argc, char **argv
 extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_state, FILE* output_stream, int argc, char** argv)
@@ -392,7 +434,7 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     defcode("interpret",    CODE(INTERPRET),    0);
     defcode("branch",       CODE(BRANCH),       FLAG_HASARG);
     defcode("eow",          CODE(EOW),          0);
-    defcode("call",         CODE(CALL),         FLAG_HASARG); // for scheduling 
+    defcode("call",         CODE(CALL),         FLAG_HASARG); // for scheduling
     defcode("ireturn",      CODE(IRETURN),      0);
     defcode("lit",          CODE(LIT),          FLAG_HASARG);
     defcode("exit",         CODE(EXIT),         0);
@@ -428,12 +470,217 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     // defcode("tsp@", CODE(GETT0), 0);
     // defcode("2nip",     CODE(2NIP),     0);  // used in new find
     // defcode("execute",  CODE(EXECUTE),  0);  // needed for interpret rewrite
-    // defcode("number",   CODE(PARSENUM), 0);  // needed for interpret rewrite
-    // defcode("open-file",  CODE(OPENFILE),  0);
-    // defcode("close-file", CODE(CLOSEFILE), 0);
-    // defcode("?eof",       CODE(ISEOF),     0);
-    // defcode("?eol",       CODE(ISEOL),     0);
+
     // defcode("depth",      CODE(DEPTH),     0);  // or define in forth
+
+    // misc
+    defcode("jump",         CODE(JUMP),             FLAG_HASARG);
+    defcode("noop",         CODE(NOOP),             0);
+    defcode("execute",      CODE(EXECUTE),          0); // todo: vs builtin-exe vs iexe?
+    defcode("exec-builtin", CODE(EXEC_BUILTIN),     0); // todo: rename defcode to definstr? nah...
+    defcode("iexecute",     CODE(IEXECUTE),         0);
+
+    // defcode("field@", CODE(GET_FIELD), FLAG_HASARG);
+    // defcode("field!", CODE(SET_FIELD), FLAG_HASARG);
+    // defcode("ffield@", CODE(GET_FFIELD), FLAG_HASARG);
+    // defcode("ffield!", CODE(SET_FFIELD), FLAG_HASARG);
+    // defcode("sfield@", CODE(GET_SFIELD), FLAG_HASARG);
+    // defcode("sfield!", CODE(SET_SFIELD), FLAG_HASARG);
+
+    defcode("1branch",   CODE(1BRANCH),    FLAG_HASARG);
+    defcode("<branch",   CODE(LTBRANCH),   FLAG_HASARG);
+    defcode(">branch",   CODE(GTBRANCH),   FLAG_HASARG);
+    defcode("<=branch",  CODE(LTEBRANCH),  FLAG_HASARG);
+    defcode(">=branch",  CODE(GTEBRANCH),  FLAG_HASARG);
+    defcode("0<branch",  CODE(LTZBRANCH),  FLAG_HASARG); // todo: change 0 order?
+    defcode("0>branch",  CODE(GTZBRANCH),  FLAG_HASARG);
+    defcode("0<=branch", CODE(LTEZBRANCH), FLAG_HASARG);
+    defcode("0>=branch", CODE(GTEZBRANCH), FLAG_HASARG);
+    defcode("=branch",   CODE(EQBRANCH),   FLAG_HASARG);
+    defcode("<>branch",  CODE(NEQBRANCH),  FLAG_HASARG);
+
+    defcode("2r>", CODE(2FROMR), 0);
+    defcode("2>r", CODE(2TOR),  0);
+    defcode("rdrop", CODE(RDROP), 0);
+    defcode("2rdrop", CODE(2RDROP), 0);
+    defcode("dsp@", CODE(DSP_FETCH), 0);
+    defcode("dsp!", CODE(DSP_STORE), 0);
+    defcode("rsp@", CODE(RSP_GET), 0);
+    defcode("rsp!", CODE(RSP_PUT), 0);
+    // // lit
+    defcode("lit+", CODE(LIT_PLUS), FLAG_HASARG);
+    defcode("lit-", CODE(LIT_MINUS), FLAG_HASARG);
+    defcode("flit", CODE(FLIT), FLAG_HASARG);
+    defcode("flit+", CODE(FLIT_PLUS), FLAG_HASARG);
+    defcode("flit-", CODE(FLIT_MINUS), FLAG_HASARG);
+    // dup
+    // dup2??
+    defcode("fdup", CODE(FDUP), 0);
+    defcode("fdup2", CODE(FDUP2), 0);
+    defcode("fdupvec", CODE(FDUPVEC), 0);
+    defcode("dup@", CODE(DUP_AT), 0);
+    // nip
+    defcode("fnip", CODE(FNIP), 0);
+    defcode("2nip", CODE(2NIP), 0);
+    defcode("2fnip", CODE(2FNIP), 0);
+    // 2dup
+    defcode("f2dup", CODE(F2DUP), 0);
+    defcode("?dup", CODE(COND_DUP), 0);
+    // swap
+    defcode("fswap", CODE(FSWAP), 0);
+    defcode("swapdup", CODE(SWAPDUP), 0);
+    // over
+    // tuck
+    // drop
+    defcode("fdrop", CODE(FDROP), 0);
+    // rot
+    // -rot
+    defcode("frot", CODE(FROT), 0);
+    defcode("-frot", CODE(FMROT), 0);
+    // // 2drop
+    // // /mod
+    defcode("u/mod", CODE(UDIVMOD), 0);
+    // // +
+    defcode("bi+", CODE(BI_ADD), 0);
+    // // ...
+    defcode("u<", CODE(U_LT), 0);
+    defcode("u>", CODE(U_GT), 0);
+    defcode("u<=", CODE(U_LTE), 0);
+    defcode("u>=", CODE(U_GTE), 0);
+    // ...
+    defcode("-!", CODE(MEM_SUB), 0);
+    // // ...
+    defcode("f,", CODE(FCOMMA), 0);
+    //
+    defcode("f!", CODE(FSTORE), 0);
+    defcode("f@", CODE(FFETCH), 0);
+    defcode("var@", CODE(VAR_AT), FLAG_HASARG);
+    defcode("var!", CODE(VAR_TO), FLAG_HASARG);
+    defcode("fvar@", CODE(FVAR_AT), FLAG_HASARG);
+    defcode("fvar!", CODE(FVAR_TO), FLAG_HASARG);
+    defcode("svar@", CODE(SVAR_AT), FLAG_HASARG);
+    defcode("svar!", CODE(SVAR_TO), FLAG_HASARG);
+    // // // c!
+    // // / c@
+    defcode("s!", CODE(SSTORE), 0);
+    defcode("s@", CODE(SFETCH), 0);
+    defcode("c@c!", CODE(BYTE_COPY), 0);
+
+    // defcode("malloc", CODE(MALLOC), 0);
+    // defcode("malloc-atomic", CODE(MALLOC_ATOMIC), 0);
+    // defcode("mrealloc", CODE(REALLOC), 0);
+    // defcode("run-gc", CODE(RUN_GC), 0);
+    // defcode("mfree, CODE(MFREE), 0);
+    // defcode("ccopy", CODE(CCOPY), 0);
+    // defcode("cmove", CODE(CMOVE), 0);
+    // //
+    // defcode("number",   CODE(PARSE_NUM), 0);  // needed for interpret rewrite
+    // defcode("fnumber", CODE(PARSE_FNUM), 0);
+
+    // defcode("open-file",  CODE(OPEN_FILE),  0);
+    // defcode("close-file", CODE(CLOSE_FILE), 0);
+    // defcode("?eof",       CODE(IS_EOF),     0);
+    // defcode("?eol",       CODE(IS_EOL),     0);
+    // defcode("prompt",     CODE(PROMPT),     0);
+
+    // defcode("tsp@", CODE(GET_T0), 0); // todo: rename?
+    // defcode("tsp!", CODE(SET_T0), 0);
+    // defcode(">t", CODE(TO_TMP), 0);
+    // defcode("t>", CODE(FROM_TMP), 0);
+
+    // // dyncall stuff
+
+
+    // defcode("new-thread", CODE(NEW_THREAD), 0);
+    // defcode("kill-thread", CODE(KILL_THREAD), 0);
+
+    // defcode("fsp!", CODE(SET_FS), 0);
+    // defcode("fsp@", CODE(GET_FS), 0);
+    // defcode("f+", CODE(FADD), 0);
+    // defcode("f-", CODE(FSUB), 0);
+    // defcode("f*", CODE(FMUL), 0);
+    // defcode("f/", CODE(FDIV), 0);
+    // defcode("powf", CODE(POWF), 0); // todo: rename to fpow?
+    // defcode("f<", CODE(FLT), 0);
+    // defcode("f>", CODE(FGT), 0);
+    // defcode("f<=", CODE(FLTE), 0);
+    // defcode("f>=", CODE(FGTE), 0);
+    // defcode("fabs", CODE(FABS), 0);
+    // defcode("ffloor", CODE(FFLOOR), 0);
+    // defcode("fsqrt", CODE(FSQRT), 0);
+    // defcode("fsin", CODE(FSIN), 0);
+    // defcode("fcos", CODE(FCOS), 0);
+    // defcode("ftan", CODE(FTAN), 0);
+    // defcode("fasin", CODE(FASIN), 0);
+    // defcode("facos", CODE(FACOS), 0);
+    // defcode("fatan", CODE(FATAN), 0);
+    // defcode("fatan2", CODE(FATAN), 0);
+    // defcode("fceil", CODE(FCEIL, 0);
+    // defcode("f>i", CODE(F_TO_I), 0);
+    // defcode("i>f", CODE(I_TO_F), 0);
+    // defcode("v3+", CODE(V3_ADD), 0);
+    // defcode("v3-", CODE(V3_SUB), 0);
+    // defcode("v3s*", CODE(V3_SCALAR_MULT), 0);
+    // defcode("v3s/", CODE(V3_SCALAR_DIV), 0);
+    // defcode("v3dot", CODE(V3_DOT), 0);
+    // defcode("v3len^2", CODE(V3_LEN_SQUARED), 0);
+    // defcode("v3cross", CODE(V3_CROSS), 0);
+    // defcode("matvec3*", CODE(MAT_V3_MUL), 0); // todo: did i butcher the naming?
+    // defcode("matmat*", CODE(M33_M33_MUL), 0); // todo: ^ same here, obv
+    // defcode("store-v3", CODE(STORE_V3), 0);
+    // defcode("load-v3", CODE(LOAD_V3), 0);
+
+    // //
+    // //
+
+    // defcode("format", CODE(FORMAT), 0); // dyncall thing??
+    // //     BYTECODE(FORMAT, "format", 1, 0, 0, {
+    // //     char *fmt = (char*)POP();
+    // //     static char format_buf[512];
+    // //     char *out = format_buf;
+    // //     char *f = fmt;
+    // //     while (*f) {
+    // //         if (*f == '%') {
+    // //             f++;
+    // //             switch (*f++) {
+    // //                 case 'd': out += sprintf(out, "%d", (int)POP()); break;
+    // //                 case 's': out += sprintf(out, "%s", (char*)POP()); break;
+    // //                 case '%': *out++ = '%'; break;
+    // //             }
+    // //         } else {
+    // //             *out++ = *f++;
+    // //         }
+    // //     }
+    // //     *out = '\0';
+    // //     PUSH(format_buf);
+    // // })
+
+    // // */ -- ( n1 n2 n3 — n4 )
+    // BUITIN(MUL_DIV,
+    // {
+
+    // })
+
+    // // */MOD -- ( n1 n2 n3 — n4 n5 )
+    // BUILTIN(MUL_DIV_MOD,
+    // {
+    // })
+    // // +Loop
+    // // leave
+    // // page
+    // // quit -- ( — ) Terminates execution for the current task and returns control to the terminal.
+
+
+
+
+
+
+
+
+
+
+
+
 
     // control flow //
     defcode("0branch",      CODE(0BRANCH),          0);
@@ -454,14 +701,14 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     defcode("immediate",    CODE(IMMEDIATE),    FLAG_IMMEDIATE);
     // defcode("inline",       CODE(INLINE),       FLAG_IMMEDIATE); // keep in bootstrap
     // defcode("compile",      CODE(COMPILE),      FLAG_IMMEDIATE);
-    
+
     // memory //
     defcode("!",            CODE(STORE),        0);
     defcode("@",            CODE(FETCH),        0);
     defcode("c!",           CODE(CSTORE),       0);
     defcode("c@",           CODE(CFETCH),       0);
     defcode("+!",           CODE(MEMADD),       0);
-    
+
     // dstack //
     defcode("dup",          CODE(DUP),          0);
     defcode("swap",         CODE(SWAP),         0);
@@ -474,7 +721,6 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     defcode("2dup",         CODE(2DUP),         0);
     defcode("2drop",        CODE(2DROP),        0);
     defcode("?dup",         CODE(CONDDUP),      0);
-    defcode("dsp@",         CODE(DSPFETCH),     0);
 
     // math //
     defcode("+",            CODE(ADD),          0);
@@ -494,7 +740,7 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     defcode("0=",           CODE(EQZ),          0);
     defcode("0>",           CODE(GTZ),          0);
     defcode("0<",           CODE(LTZ),          0);
-    defcode("0>=",          CODE(GTEZ),         0);
+    defcode("0>=",          CODE(GTEZ),         0); // todo: change the order! .. or keep cause forth
     defcode("0<=",          CODE(LTEZ),         0);
     defcode("0<>",          CODE(NEQZ),         0);
     defcode("abs",          CODE(ABS),          0);
@@ -550,24 +796,36 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     #include "forth_ops_core_all.h"
 }
 
+
+
+
+
+
+
+
 int main(int argc, char** argv)
 {
+
     cell    datastack[1024];
     void**  returnstack[512];
 
+
     reader_state_t* input_state = open_file("forth.f", "r");
-    if(!input_state) {
+    if(!input_state)
+    {
         fprintf(stderr, "Cannot open bootstrap file forth.f!\n");
         return 1;
     }
+
 
     here_size   = 10*1024*1024;
     here0       = malloc(here_size);
     here        = here0;
     start_forth(NULL, datastack+1024, returnstack+512, input_state, stdout, argc, argv);
     close_file(input_state);
-    // todo: ideally we can defcode some more stuff here... 
+    // todo: ideally we can defcode some more stuff here...
 
-    
+
     return 0;
+
 }

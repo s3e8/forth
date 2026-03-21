@@ -1,28 +1,28 @@
 BUILTIN(LATEST,
 {
-    printf("[ latest ]\n");
-    
+    // printf("[ latest ]\n");
+
     PUSH(&latest);
 })
 
 BUILTIN(CREATE,
 {
-    printf("[ create ]\n");
+    // printf("[ create ]\n");
 
     create((char*)POP(), 0);
 })
 
 BUILTIN(FIND,
 {
-    printf("[ find ]\n");
-    
+    // printf("[ find ]\n");
+
     char* wordname = (char*)POP();
     PUSH(find(wordname));
 })
 
 BUILTIN(VARIABLE, {
-    
-    printf("[ variable ]\n");
+
+    // printf("[ variable ]\n");
 
     char* name = get_next_word(reader_state, current_word); // todo: or wordbuf
     if (!name)
@@ -39,5 +39,5 @@ BUILTIN(VARIABLE, {
 BUILTIN(HIDDEN,
 {
     word_header_t* hdr = (word_header_t*)POP();
-    hdr->flags ^= FLAG_HIDDEN;    
+    hdr->flags ^= FLAG_HIDDEN;
 })

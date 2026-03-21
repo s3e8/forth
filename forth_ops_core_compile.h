@@ -1,6 +1,6 @@
 BUILTIN(COLON,
 {
-    printf("[ colon ]\n");
+    // printf("[ colon ]\n");
 
     get_next_word(reader_state, current_word);
 
@@ -13,7 +13,7 @@ BUILTIN(COLON,
 
 BUILTIN(SEMICOLON,
 {
-    printf("[ semicolon ]\n");
+    // printf("[ semicolon ]\n");
 
     // finish current definition
     comma((cell)getcode("exit")); // todo: why cant I use OP(EXIT)?
@@ -30,7 +30,7 @@ BUILTIN(TICK,
     if (header)
     {
         xt = tick(header); // todo: can change to tmp register later...
-        
+
         if (state == STATE_IMMEDIATE) PUSH((cell)xt); // todo: is xt still a thing?
         else {
             comma((cell)CODE(LIT));
@@ -41,7 +41,7 @@ BUILTIN(TICK,
 
 BUILTIN(COMMA,
 {
-    printf("[ , ]\n");
+    // printf("[ , ]\n");
 
     value = POP();
     comma(value);
@@ -49,60 +49,31 @@ BUILTIN(COMMA,
 
 BUILTIN(LBRAC,
 {
-    printf("[ [ ]\n");
+    // printf("[ [ ]\n");
 
     state = STATE_IMMEDIATE;
 })
 
 BUILTIN(RBRAC,
 {
-    printf("[ ] ]\n");
+    // printf("[ ] ]\n");
 
     state = STATE_COMPILE;
 })
 
 BUILTIN(TOCFA,
 {
-    printf("[ >cfa ]\n");
-    
+    // printf("[ >cfa ]\n");
+
     header = NULL;
     header = (word_header_t*)POP();
-    PUSH((header + 1));    
+    PUSH((header + 1));
 
 })
 
-// BUILTIN(COMPILE,
-// {
-//     printf("[ compile ]\n");
-
-//     // COMPILE is IMMEDIATE - it runs during compilation
-//     // It takes the NEXT word from input and compiles its XT
-//     // WITHOUT executing it
-
-//     header = NULL;
-//     header = find( get_next_word() );
-//     printf("[ compile ] read word   : '%s'\n", current_word);
-//     printf("[ compile ] header      : '%s'\n", header->name);
-//     if (header)
-//     {
-//         printf("word: %s...\n", header->name);
-        
-//         if (header->flags & FLAG_BUILTIN)
-//         {
-//             printf("compiling builtin...\n");
-//             comma((cell)tick(header));
-//         }
-//         else {
-//             printf("compiling word...\n");
-//             comma((cell)CODE(CALL));
-//             comma((cell)tick(header));
-//         }
-//     }
-// })
-
 BUILTIN(IMMEDIATE,
 {
-    printf("[ immediate ]\n");
+    // printf("[ immediate ]\n");
 
     latest->flags ^= FLAG_IMMEDIATE; // todo: check -- slarba's def, no args
 
@@ -113,7 +84,7 @@ BUILTIN(IMMEDIATE,
 
 BUILTIN(INLINE,
 {
-    printf("[ inline ]\n");
+    // printf("[ inline ]\n");
 
     latest->flags ^= FLAG_INLINE; // todo: check -- slarba's def, no args
 
@@ -121,11 +92,3 @@ BUILTIN(INLINE,
     // word_header_t* word_header = (word_header_t*)POP();
     // word_header->flags ^= INLINE;
 })
-
-// : make-inline
-//     latest @ dup
-//     @ f_inline xor
-//     swap !
-// ;
-
-// : inline immediate make-inline ;

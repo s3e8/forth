@@ -1,6 +1,6 @@
 BUILTIN(DUP,
 {
-    printf("[ dup ]\n");
+    // printf("[ dup ]\n");
 
     cell value = TOP();
     PUSH(value);
@@ -8,62 +8,36 @@ BUILTIN(DUP,
 
 BUILTIN(SWAP,
 {
-    printf("[ swap ]\n");
-    
-    // BYTECODE(SWAP, "swap", 2, 0, 0, {
-    //     tmp = AT(1);
-    //     AT(1) = AT(0);
-    //     AT(0) = tmp;
-    // })
-
-    //  // Stack: ( a b -- b a )
-    // // Access stack items directly
-
-    // cell b = AT(-1);     // Top item (b)
-    // cell a = AT(-2);     // Second item (a)
-
-    // // Swap them in place
-    // AT(-1) = a;
-    // AT(-2) = b;
-
-    // print_stack(ds, s0);
-
-    // cell b = POP();      // Remove top value (b)
-    // cell a = POP();      // Remove next value (a)
-
-    // PUSH(b);             // Push b first
-    // PUSH(a);             // Then push a
-
     tmp = AT(1);
     AT(1) = AT(0);
     AT(0) = tmp;
 })
 
-BUILTIN(DROP, 
-{ 
-    printf("[ drop ]\n");
-    ds++; 
+BUILTIN(DROP,
+{
+    // printf("[ drop ]\n");
+    ds++;
 })
 
-BUILTIN(OVER, 
-{ 
-    printf("[ over ]\n");
+BUILTIN(OVER,
+{
+    // printf("[ over ]\n");
 
-    tmp = AT(1); 
-    PUSH(tmp); 
+    tmp = AT(1);
+    PUSH(tmp);
 })
 
 BUILTIN(NIP,
 {
-    printf("[ nip ]\n");
+    // printf("[ nip ]\n");
 
-    AT(1) = AT(0); 
+    AT(1) = AT(0);
     ds++;
 })
 
 BUILTIN(TUCK,
 {
-    printf("[ tuck ]\n");
+    // printf("[ tuck ]\n");
 
     tmp = AT(1);
     AT(1) = AT(0);
@@ -74,31 +48,31 @@ BUILTIN(TUCK,
 
 BUILTIN(ROT,
 {
-    printf("[ rot ]\n");
+    // printf("[ rot ]\n");
 
     cell eax = POP();
     cell ebx = POP();
     cell ecx = POP();
     PUSH(ebx);
     PUSH(eax);
-    PUSH(ecx);  
+    PUSH(ecx);
 })
 
 BUILTIN(MROT,
 {
-    printf("[ -rot ]\n");
-    
+    // printf("[ -rot ]\n");
+
     cell eax = POP();
     cell ebx = POP();
     cell ecx = POP();
     PUSH(eax);
     PUSH(ecx);
-    PUSH(ebx);    
+    PUSH(ebx);
 })
 
 BUILTIN(2DUP,
 {
-    printf("[ 2dup ]\n");
+    // printf("[ 2dup ]\n");
 
     tmp = AT(1);
     PUSH(tmp);
@@ -108,14 +82,14 @@ BUILTIN(2DUP,
 
 BUILTIN(2DROP,
 {
-    printf("[ 2drop ]\n");
+    // printf("[ 2drop ]\n");
 
     ds += 2;
 })
 
 BUILTIN(CONDDUP,
 {
-    printf("[ ?dup ]\n");
+    // printf("[ ?dup ]\n");
 
     if (TOP()) PUSH(TOP());  // dup only if nonzero
 })
@@ -125,10 +99,115 @@ BUILTIN(CONDDUP,
 // BUILTIN(DROP, { ds++; })
 // BUILTIN(OVER, { tmp = AT(1); PUSH(tmp); })
 
-BUILTIN(DSPFETCH,
+BUILTIN(DSP_FETCH,
 {
-    printf("[ dsp@ ]\n");
+    // printf("[ dsp@ ]\n");
 
     tmp = (cell)ds;
-    PUSH(tmp);    
+    PUSH(tmp);
+})
+
+BUILTIN(DSP_STORE,
+{
+    cell *newds = (cell*)POP();
+    ds = newds;
+})
+
+
+
+
+
+
+
+BUILTIN(RSP_GET, { PUSH(rs); })
+BUILTIN(RSP_PUT, { rs = (void***)POP(); })
+
+
+
+
+
+
+
+
+BUILTIN(FDUP,
+{
+    float val = FTOP();
+    FPUSH(val);
+})
+
+BUILTIN(FDUP2, // todo: 2FDUP... duhhh.. right?
+{
+    float val = FAT(1);
+    FPUSH(val);
+    val = FAT(1);
+    FPUSH(val);
+})
+
+BUILTIN(FDUPVEC,
+{
+    float val = FAT(2);
+    FPUSH(val);
+    val = FAT(2);
+    FPUSH(val);
+    val = FAT(2);
+    FPUSH(val);
+})
+
+BUILTIN(DUP_AT,
+{
+    cell *addr = (cell*)TOP();
+    PUSH(*addr);
+})
+
+BUILTIN(FNIP,   { FAT(1) = FAT(0); fs++;      })
+BUILTIN(2NIP,   {  AT(2) =  AT(0); ds += 2;   })
+BUILTIN(2FNIP,  { FAT(2) = FAT(0); fs += 2;   })
+BUILTIN(F2DUP,
+{
+    tmp = AT(1);
+    PUSH(tmp);
+    tmp = AT(1);
+    PUSH(tmp);
+})
+
+BUILTIN(COND_DUP, {
+    tmp = TOP();
+    if(tmp) PUSH(tmp);
+})
+
+BUILTIN(FSWAP,
+{
+    float tmp = FAT(1);
+    FAT(1) = FAT(0);
+    FAT(0) = tmp;
+})
+
+BUILTIN(SWAPDUP,
+{
+    tmp = AT(1);
+    AT(1) = AT(0);
+    AT(0) = tmp;
+    PUSH(tmp);
+})
+
+BUILTIN(FDROP, { ++fs; })
+
+BUILTIN(FROT,
+{
+    float eax = FPOP();
+    float ebx = FPOP();
+    float ecx = FPOP();
+    FPUSH(ebx);
+    FPUSH(eax);
+    FPUSH(ecx);
+})
+
+BUILTIN(FMROT,
+{
+    float eax = FPOP();
+    float ebx = FPOP();
+    float ecx = FPOP();
+    FPUSH(eax);
+    FPUSH(ecx);
+    FPUSH(ebx);
 })

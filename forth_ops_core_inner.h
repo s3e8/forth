@@ -9,7 +9,61 @@ BUILTIN(DOES,
 
 })
 
-BUILTIN(DOCOL, 
+BUILTIN(JUMP,
+{
+    void* fn = ARG();
+    ip = fn;
+})
+
+BUILTIN(NOOP, {})
+
+BUILTIN(EXECUTE,
+{
+    PUSHRS(ip);
+    ip = (void**)POP();
+})
+
+BUILTIN(EXEC_BUILTIN, // todo: ...
+{
+    *--nestingstack = ip;
+    code_immediatebuf[0] = (void*)POP();
+    ip = code_immediatebuf;
+})
+
+// BUILTIN(IEXECUTE,
+// {
+//     word_header_t* entry = (word_header_t*)POP();
+//     void** code = cfa(entry);
+//     *--nestingstack = ip;
+
+//     if (entry->flags & FLAG_BUILTIN
+//     {
+//         code_immediatebuf[0] = code;
+//         ip = code_immediatebuf;
+//     }
+//     else {
+//         word_immediatebuf[1] = (void*)code;
+//         ip = word_immediatebuf;
+//     }
+// })
+
+// todo: this is not for inner I dont think?
+BUILTIN(IEXECUTE,
+{
+    // printf("[ iexecute ]\n");
+    word_header_t* entry = (word_header_t*)POP();
+    CODE(DOCOL);
+})
+
+
+
+
+
+
+
+
+
+BUILTIN(DOCOL,
 {
     code = tick(header); // todo: rename code to xt?
     *--nestingstack = ip;
@@ -18,7 +72,7 @@ BUILTIN(DOCOL,
     {
         code_immediatebuf[0] = code; // todo: or just put tick function here?
         ip = code_immediatebuf;
-    } 
+    }
     else {
         word_immediatebuf[1] = code;
         ip = word_immediatebuf;
@@ -30,9 +84,9 @@ BUILTIN(INTERPRET,
     // printf("[ interpret ]\n");
     if (!get_next_word(reader_state, current_word))
     {
-        if (is_eof(reader_state) && reader_state->stream != stdin) 
+        if (is_eof(reader_state) && reader_state->stream != stdin)
             reader_state->stream = stdin; // todo: this still fires even if stream == stdin
-            
+
         NEXT();
     }
 
@@ -58,12 +112,12 @@ BUILTIN(INTERPRET,
             else if (state == STATE_IMMEDIATE) { PUSH(number); }
             else { printf("error: Compiler state out of bounds. Should be either 0 or 1.\n"); return; }
         }
-        
+
         NEXT();
     }
 
     if (state == STATE_COMPILE && !(header->flags & FLAG_IMMEDIATE))
-    { // todo: use xt 'register'? 
+    { // todo: use xt 'register'?
         if (header->flags & FLAG_BUILTIN) comma((cell)tick(header));
         else {
             comma((cell) CODE(CALL));
@@ -72,7 +126,7 @@ BUILTIN(INTERPRET,
     }
     else { /* state == STATE_IMMEDIATE || word->flags & FLAG_IMMEDIATE */
         goto OP(DOCOL);
-    }         
+    }
 })
 
 BUILTIN(BRANCH,
@@ -90,12 +144,6 @@ BUILTIN(CALL,
     ip = fn;
 })
 
-BUILTIN(LIT, 
-{
-    // printf("[ lit ]\n");
-    PUSH(INTARG());
-})
-
 BUILTIN(EOW, {})
 
 BUILTIN(IRETURN,
@@ -111,43 +159,12 @@ BUILTIN(EXIT,
 })
 
 
-
-BUILTIN(EXECUTE, // exec-word
-{
-    // printf("[ execute ]\n");
-
-    PUSHRS(ip);
-    ip = (void**)POP();
-}) // todo: this is not an inner word... then what is it?
-
-// BYTECODE(BUITINEXEC, "exec-builtin", 1, 0, 0, {
-//     builtin_immediatebuf[0] = (void*)POP();
-//     *--nestingstack = ip;
-//     ip = builtin_immediatebuf;
-// })
-
-BUILTIN(JUMP,
-{
-    // printf("[ jump ]\n");
-
-    void *fn = ARG();
-    ip = fn;
-}) // todo: same as execute.. where does this belong?
-
 BUILTIN(IWORD,
 {
     // printf("[ iword ]\n");
 
     PUSH(get_next_word(reader_state, current_word));
 })
-
-// // todo: this is not for inner I dont think? 
-// BUILTIN(IEXECUTE,
-// {
-//     printf("[ iexecute ]\n");
-//     word_header_t* entry = (word_header_t*)POP();
-//     CODE(DOCOL);
-// })
 
 
 
@@ -171,3 +188,22 @@ BUILTIN(IWORD,
 //       PUSH(1);
 //     }
 //   })
+
+
+
+
+// not really inner but ok for now:
+BUILTIN(LIT,        { PUSH(INTARG());               })
+BUILTIN(LIT_PLUS,   { AT(0) += INTARG();            })
+BUILTIN(LIT_MINUS,  { AT(0) -= INTARG();            })
+BUILTIN(FLIT,       { FPUSH(FLOATARG());    ip++;   })
+BUILTIN(FLIT_PLUS,  { FAT(0) += FLOATARG(); ip++;   })
+BUILTIN(FLIT_MINUS, { FAT(0) -= FLOATARG(); ip++;   })
+
+
+
+
+
+
+    // defcode("number",   CODE(PARSE_NUM), 0);  // needed for interpret rewrite
+    // defcode("fnumber", CODE(PARSE_FNUM), 0);

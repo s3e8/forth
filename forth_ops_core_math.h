@@ -15,7 +15,7 @@ BUILTIN(SUB,
     // printf("[ - ]\n");
 
     tmp = POP();
-    AT(0) -= tmp;   
+    AT(0) -= tmp;
 })
 
 BUILTIN(MUL,
@@ -23,7 +23,7 @@ BUILTIN(MUL,
     // printf("[ * ]\n");
 
     tmp = POP();
-    AT(0) *= tmp;   
+    AT(0) *= tmp;
 })
 
 BUILTIN(DIV,
@@ -31,7 +31,7 @@ BUILTIN(DIV,
     // printf("[ / ]\n");
 
     tmp = POP();
-    AT(0) /= tmp;  
+    AT(0) /= tmp;
 })
 
 BUILTIN(MOD,
@@ -39,7 +39,7 @@ BUILTIN(MOD,
     // printf("[ mod ]\n");
 
     tmp = POP();
-    AT(0) = AT(0) % tmp;    
+    AT(0) = AT(0) % tmp;
 })
 
 BUILTIN(DIVMOD,
@@ -49,7 +49,7 @@ BUILTIN(DIVMOD,
     cell a = POP();
     cell b = POP();
     PUSH( b % a );
-    PUSH( b / a );   
+    PUSH( b / a );
 })
 
 BUILTIN(ADD1,
@@ -70,7 +70,7 @@ BUILTIN(EQ,
 {
     // printf("[ = ]\n");
 
-    tmp = POP(); 
+    tmp = POP();
     AT(0) = AT(0) == tmp;
 })
 
@@ -79,7 +79,7 @@ BUILTIN(NEQ,
     // printf("[ <> ]\n");
 
     tmp = POP();
-    AT(0) = AT(0) != tmp;  
+    AT(0) = AT(0) != tmp;
 })
 
 BUILTIN(GT,
@@ -87,7 +87,7 @@ BUILTIN(GT,
     // printf("[ > ]\n");
 
     tmp = POP();
-    AT(0) = AT(0) > tmp;   
+    AT(0) = AT(0) > tmp;
 })
 
 BUILTIN(LT,
@@ -95,7 +95,7 @@ BUILTIN(LT,
     // printf("[ < ]\n");
 
     tmp = POP();
-    AT(0) = AT(0) > tmp;   
+    AT(0) = AT(0) > tmp;
 })
 
 BUILTIN(LTE,
@@ -103,7 +103,7 @@ BUILTIN(LTE,
     // printf("[ <= ]\n");
 
     tmp = POP();
-    AT(0) = AT(0) <= tmp;   
+    AT(0) = AT(0) <= tmp;
 })
 
 BUILTIN(GTE,
@@ -111,7 +111,7 @@ BUILTIN(GTE,
     // printf("[ >= ]\n");
 
     tmp = POP();
-    AT(0) = AT(0) >= tmp;   
+    AT(0) = AT(0) >= tmp;
 })
 
 BUILTIN(EQZ,
@@ -189,9 +189,9 @@ BUILTIN(MAX,
 BUILTIN(AND,
 {
     // printf("[ and ]\n");
-    
+
     tmp = POP();
-    AT(0) &= tmp;   
+    AT(0) &= tmp;
 })
 
 BUILTIN(OR,
@@ -207,14 +207,14 @@ BUILTIN(XOR,
     // printf("[ xor ]\n");
 
     tmp = POP();
-    AT(0) ^= tmp; 
+    AT(0) ^= tmp;
 })
 
 BUILTIN(NEG,
 {
     // printf("[ invert ]\n");
 
-    AT(0) = ~AT(0); 
+    AT(0) = ~AT(0);
 })
 
 BUILTIN(LSHIFT,
@@ -222,7 +222,7 @@ BUILTIN(LSHIFT,
     // printf("[ lshift ]\n");
 
     tmp = POP();
-    AT(0) <<= tmp;  
+    AT(0) <<= tmp;
 })
 
 BUILTIN(RSHIFT,
@@ -230,5 +230,80 @@ BUILTIN(RSHIFT,
     // printf("[ rshift ]\n");
 
     tmp = POP();
-    AT(0) >>= tmp;  
+    AT(0) >>= tmp;
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BUILTIN(UDIVMOD,
+{
+    cell a = POP();
+    cell b = POP();
+    PUSH( (unsigned)b % (unsigned)a );
+    PUSH( (unsigned)b / (unsigned)a );
+})
+
+BUILTIN(BI_ADD, // todo: purpose?
+{
+    tmp = POP();
+    AT(0) += tmp;
+    tmp = POP();
+    AT(0) += tmp;
+})
+
+BUILTIN(U_LT,
+{
+    tmp = POP();
+    AT(0) = (unsigned)AT(0) < (unsigned)tmp;
+})
+
+BUILTIN(U_GT,
+{
+    tmp = POP();
+    AT(0) = (unsigned)AT(0) > (unsigned)tmp;
+})
+
+BUILTIN(U_LTE,
+{
+    tmp = POP();
+    AT(0) = (unsigned)AT(0) >= (unsigned)tmp;
+})
+
+BUILTIN(U_GTE,
+{
+    tmp = POP();
+    AT(0) = (unsigned)AT(0) >= (unsigned)tmp;
+})
+
+
+// */ -- ( n1 n2 n3 — n4 )
+BUITIN(MUL_DIV,
+{
+
+})
+
+// */MOD -- ( n1 n2 n3 — n4 n5 )
+BUILTIN(MUL_DIV_MOD,
+{
+})
+// +Loop
+// leave
+// page
+// quit -- ( — ) Terminates execution for the current task and returns control to the terminal.
