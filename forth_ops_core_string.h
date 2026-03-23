@@ -1,6 +1,6 @@
 BUILTIN(STRCAT,
 {
-    printf("[ strcat ]\n");
+    // printf("[ strcat ]\n");
 
     char *dst = (char*)POP();
     char *src = (char*)POP();
@@ -9,7 +9,7 @@ BUILTIN(STRCAT,
 
 BUILTIN(STRLEN,
 {
-    printf("[ strlen ]\n");
+    // printf("[ strlen ]\n");
 
     char *str = (char*)POP();
     PUSH(strlen(str));
@@ -17,17 +17,17 @@ BUILTIN(STRLEN,
 
 BUILTIN(STRNCPY,
 {
-    printf("[ strncpy ]\n");
+    // printf("[ strncpy ]\n");
 
     tmp = POP();
     char *dst = (char*)POP();
     char *src = (char*)POP();
-    PUSH(strncpy(dst, src, tmp));  
+    PUSH(strncpy(dst, src, tmp));
 })
 
 BUILTIN(STRCPY,
 {
-    printf("[ strcpy ]\n");
+    // printf("[ strcpy ]\n");
 
     char *dst = (char*)POP();
     char *src = (char*)POP();
@@ -36,7 +36,7 @@ BUILTIN(STRCPY,
 
 BUILTIN(STRCMP,
 {
-    printf("[ strcmp ]\n");
+    // printf("[ strcmp ]\n");
 
     char *b = (char*)POP();
     char *a = (char*)POP();

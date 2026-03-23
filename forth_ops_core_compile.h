@@ -7,7 +7,7 @@ BUILTIN(COLON,
     create(current_word, 0);
     latest->flags |= FLAG_HIDDEN;
 
-    printf("created word: %s\n", current_word);
+    // printf("created word: %s\n", current_word);
     state = STATE_COMPILE;
 })
 
