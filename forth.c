@@ -384,6 +384,7 @@ void deffconst(const char* name, cell value)
 typedef struct thread_state_t {
     cell              killed;
     struct thread_state_t* next;
+
     void**            ip;
 
     void***           rs;
@@ -394,14 +395,11 @@ typedef struct thread_state_t {
 
     cell*             ts;
     cell*             t0;
-
-    float*            fs;
-    float*            f0;
 } thread_state_t;
 
 static thread_state_t* current_thread = NULL;
 
-static thread_state_t* init_thread(cell* s0, void*** r0, cell* t0, float* f0, void** entrypoint)
+static thread_state_t* init_thread(cell* s0, void*** r0, cell* t0, void** entrypoint)
 {
     thread_state_t* new = malloc(sizeof(thread_state_t));
     new->killed = 0;
@@ -409,8 +407,9 @@ static thread_state_t* init_thread(cell* s0, void*** r0, cell* t0, float* f0, vo
     new->s0  = s0;  new->ds = s0;
     new->r0  = r0;  new->rs = r0;
     new->t0  = t0;  new->ts = t0;
-    new->f0  = f0;  new->fs = f0;
-    if (!current_thread) {
+
+    if (!current_thread)
+    {
         current_thread = new;
         new->next = new;
     } else {
@@ -432,9 +431,12 @@ static thread_state_t* create_thread(int ds_size, int rs_size, void** entrypoint
 static void kill_thread()
 {
     if (!current_thread || current_thread->next == current_thread) return;
-    current_thread->killed = 1;
-    thread_state_t* i = current_thread;
+
+    current_thread->killed  = 1;
+    thread_state_t* i       = current_thread;
+
     while (i->next != current_thread) i = i->next;
+
     i->next = current_thread->next;
     current_thread = i;
 }
@@ -461,9 +463,23 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     void**   nestingstack_space[NESTINGSTACK_MAX_DEPTH];                 // i think this is for re-entering the interpreter after immediate execution??
     void***  nestingstack = nestingstack_space + NESTINGSTACK_MAX_DEPTH; // ... as opposed to rs which is for lots of stuff // todo: rename to ns?
 
+    void* code_immediatebuf[] = { NULL, CODE(IRETURN) };                                  // todo: do i need to put length inside immediatebuf[2] etc
+    void* word_immediatebuf[] = { CODE(CALL), NULL, CODE(IRETURN) };                      //
+    void* quit[]              = { CODE(INTERPRET),  CODE(BRANCH), OFFSET(-2), CODE(EOW) }; /* the interpreter loop */
+
+    char            current_word[LINEBUF_LENGTH];
+    char            wordbuf[WORDBUF_LENGTH];
+    char            stdinbuf[1024];
+    reader_state_t  stdin_state;
+
     // some default vars and constants
     cell base  = 10;
     cell state = 0;
+
+
+
+
+
 
     /* and finally, some quick access variables */
     // todo: organize by what is mostly used by each type of bytecode... eg stack, math, dict, etc
@@ -477,14 +493,6 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     register cell  a;
     register cell  b;
 
-    void* code_immediatebuf[] = { NULL, CODE(IRETURN) };                                  // todo: do i need to put length inside immediatebuf[2] etc
-    void* word_immediatebuf[] = { CODE(CALL), NULL, CODE(IRETURN) };                      //
-    void* quit[]              = { CODE(INTERPRET),  CODE(BRANCH), OFFSET(-2), CODE(EOW) }; /* the interpreter loop */
-
-    char            current_word[LINEBUF_LENGTH];
-    char            wordbuf[WORDBUF_LENGTH];
-    char            stdinbuf[1024];
-    reader_state_t  stdin_state;
 
     /* ------------------------------------------------------ */
     /*     | name         | code              | flags         */
