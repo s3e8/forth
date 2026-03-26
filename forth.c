@@ -347,6 +347,7 @@ void deffconst(const char* name, cell value)
 /// vm ///
 #define NEXT() goto *(*ip++)  // todo: why ** //
 
+// todo: reorder
 #define PUSHRS(x)   (*--rs = (void**)(x))   // grow/decrement downward first, then store
 #define POPRS()     (*rs++)                 // pop, then shrink upward
 
@@ -362,11 +363,9 @@ void deffconst(const char* name, cell value)
 #define FPUSH(x)     *--fs = (float)(x)
 #define FPOP()       (*fs++)
 
-#define ARG()       (*ip++)                 // takes the next item on the ip thread as
-#define INTARG()    ((cell)(*ip++))         // takes the next item on the ip thread as an int argument, casted as (cell) cause... forth
+#define      ARG()          (*ip++)         // takes the next item on the ip thread as
+#define   INTARG()   ((cell)(*ip++))        // takes the next item on the ip thread as an int argument, casted as (cell) cause... forth
 #define FLOATARG()  (*(float*)ip)
-
-
 
 
 
@@ -382,6 +381,64 @@ void deffconst(const char* name, cell value)
 #define OFFSET(x)  (void*)((x) * sizeof(cell)) // todo: or (x) * sizeof...? // to calculate branch offsets
 
 
+typedef struct thread_state_t {
+    cell              killed;
+    struct thread_state_t* next;
+    void**            ip;
+
+    void***           rs;
+    void***           r0;
+
+    cell*             ds;
+    cell*             s0;
+
+    cell*             ts;
+    cell*             t0;
+
+    float*            fs;
+    float*            f0;
+} thread_state_t;
+
+static thread_state_t* current_thread = NULL;
+
+static thread_state_t* init_thread(cell* s0, void*** r0, cell* t0, float* f0, void** entrypoint)
+{
+    thread_state_t* new = malloc(sizeof(thread_state_t));
+    new->killed = 0;
+    new->ip  = entrypoint;
+    new->s0  = s0;  new->ds = s0;
+    new->r0  = r0;  new->rs = r0;
+    new->t0  = t0;  new->ts = t0;
+    new->f0  = f0;  new->fs = f0;
+    if (!current_thread) {
+        current_thread = new;
+        new->next = new;
+    } else {
+        new->next = current_thread->next;
+        current_thread->next = new;
+    }
+    return new;
+}
+
+static thread_state_t* create_thread(int ds_size, int rs_size, void** entrypoint)
+{
+    return init_thread(
+        (cell*)malloc(ds_size * sizeof(cell)) + ds_size,
+        (void***)malloc(rs_size * sizeof(void**)) + rs_size,
+        NULL, NULL,
+        entrypoint);
+}
+
+static void kill_thread()
+{
+    if (!current_thread || current_thread->next == current_thread) return;
+    current_thread->killed = 1;
+    thread_state_t* i = current_thread;
+    while (i->next != current_thread) i = i->next;
+    i->next = current_thread->next;
+    current_thread = i;
+}
+
 
 
 
@@ -392,12 +449,14 @@ void deffconst(const char* name, cell value)
 // void **ip, cell *ds, void ***rs, reader_state_t *inputstate, FILE *outp, int argc, char **argv
 extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_state, FILE* output_stream, int argc, char** argv)
 {
+    void***  r0              = rs;
+    void**   debugger_vector = NULL;
+
     cell*    s0 = ds;
     cell*    t0 = NULL; // temp stack, to be later set in forth
     cell*    ts = NULL;
     float*   f0 = NULL;
     float*   fs = NULL;
-    void***  r0 = rs;
 
     void**   nestingstack_space[NESTINGSTACK_MAX_DEPTH];                 // i think this is for re-entering the interpreter after immediate execution??
     void***  nestingstack = nestingstack_space + NESTINGSTACK_MAX_DEPTH; // ... as opposed to rs which is for lots of stuff // todo: rename to ns?
@@ -443,15 +502,30 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
 
     /// VARIABLE & CONST ACCESSORS (some defined as bytecode) ///
     defconst("version",     FORTH_VERSION);
+
     defconst("f_builtin",   FLAG_BUILTIN);
     defconst("f_hasarg",    FLAG_HASARG);
     defconst("f_immediate", FLAG_IMMEDIATE);
     defconst("f_hidden",    FLAG_HIDDEN);
     defconst("f_inline",    FLAG_INLINE);
     defconst("f_deferred",  FLAG_DEFERRED);
+
+    defconst("argc", (cell) argc);
+    defconst("argv", (cell) argv);
+
+    defconst("<stdin>",  (cell) &stdin_state);
+    defconst("<stdout>", (cell)  stdout);
+
+    defconst("input-stream",  (cell) &reader_state);
+    defconst("output-stream", (cell) &output_stream);
+
     defconst("cellsize",    (cell) sizeof(cell));
     defconst("floatsize",   (cell) sizeof(float));
     defconst("headersize",  (cell) sizeof(word_header_t));
+
+    defconst("current-thread",  (cell) &current_thread);
+    defconst("debugger-vector", (cell) &debugger_vector);
+
     defconst("here",        (cell) &here); // we give the address so we can store stuff there
     defconst("here0",       (cell) here0); // todo: why not &here0? cause malloc?
     defconst("s0",          (cell) &s0);
@@ -577,16 +651,16 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     defcode("number",   CODE(PARSE_NUM), 0);  // needed for interpret rewrite
     defcode("fnumber",  CODE(PARSE_FNUM), 0);
 
-    // defcode("open-file",  CODE(OPEN_FILE),  0);
-    // defcode("close-file", CODE(CLOSE_FILE), 0);
+    defcode("open-file",  CODE(OPEN_FILE),  0);
+    defcode("close-file", CODE(CLOSE_FILE), 0);
     // defcode("?eof",       CODE(IS_EOF),     0);
     // defcode("?eol",       CODE(IS_EOL),     0);
     // defcode("prompt",     CODE(PROMPT),     0);
 
-    // defcode("tsp@", CODE(GET_T0), 0); // todo: rename?
-    // defcode("tsp!", CODE(SET_T0), 0);
-    // defcode(">t", CODE(TO_TMP), 0);
-    // defcode("t>", CODE(FROM_TMP), 0);
+    defcode("tsp@", CODE(GET_T0), 0); // todo: rename?
+    defcode("tsp!", CODE(SET_T0), 0);
+    defcode(">t", CODE(TO_TMP), 0);
+    defcode("t>", CODE(FROM_TMP), 0);
 
     // // dyncall stuff
 
@@ -634,6 +708,7 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     // //
 
     // defcode("format", CODE(FORMAT), 0); // dyncall thing??
+    // defcode("dc-format", CODE(FORMAT), 0); // dyncall thing??
     // //     BYTECODE(FORMAT, "format", 1, 0, 0, {
     // //     char *fmt = (char*)POP();
     // //     static char format_buf[512];

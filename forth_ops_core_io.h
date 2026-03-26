@@ -48,5 +48,20 @@ BUILTIN(TELL,
 //   })
 // BYTECODE(CLOSEFILE, "close-file", 1, 0, 0, {
 //     reader_state_t *state = (reader_state_t*)POP();
-//     close_file(state);    
+//     close_file(state);
 //   })
+
+
+BUILTIN(OPEN_FILE,
+{
+    char* mode = (char*)POP();
+    char* fn   = (char*)POP();
+
+    PUSH(open_file(fn, mode));
+})
+
+BUILTIN(CLOSE_FILE,
+{
+    reader_state_t* rs = (reader_state_t*)POP();
+    close_file(rs);
+})

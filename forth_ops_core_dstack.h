@@ -122,11 +122,31 @@ BUILTIN(DSP_STORE,
 BUILTIN(RSP_GET, { PUSH(rs); })
 BUILTIN(RSP_PUT, { rs = (void***)POP(); })
 
+BUILTIN(GET_T0,   { PUSH(ts); })
+BUILTIN(SET_T0,   {    ts = (cell*)POP(); })
+BUILTIN(TO_TMP,   { *--ts =        POP(); })
+BUILTIN(FROM_TMP, { PUSH(*ts++); })
+
+BUILTIN(GET_FS, { PUSH(fs); })
+BUILTIN(SET_FS, { fs = (float*)POP(); })
 
 
 
+BUILTIN(FLT,
+{
+    float a = FPOP();
+    float b = FPOP();
+    FPUSH(a < b);
+})
+BUILTIN(FGT,
+{
+    float a = FPOP();
+    float b = FPOP();
+    FPUSH(a > b);
+})
 
-
+BUILTIN(FLTE, { goto OP(TODO); })
+BUILTIN(FGTE, { goto OP(TODO); })
 
 
 BUILTIN(FDUP,

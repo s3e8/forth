@@ -1030,9 +1030,28 @@ defer breakpoint
     prompt-display-data s" [ds:%d ts:%d fs:%d %s] DEBUG> " format
 ;
 
-s" disasm.f" include
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+s" disasm.f"   include
 s" debugger.f" include
-s" classes.f" include
+s" classes.f"  include
 s" unittest.f" include
 
 : bytes-used
@@ -1044,12 +1063,15 @@ s" unittest.f" include
 : data-bytes-used
       datahere @ datahere0 - ;
 
-: welcome
+: old-welcome
     ." -^*^- MLT Forth version " version . ." -^*^-" cr
     ."   Const space used: " const-bytes-used . cr
     ."    Data space used: " data-bytes-used . cr
     ."         Space used: " bytes-used . cr
 ;
+
+: welcome
+    ." What is MLT Forth? " ;
 
 : final-quit
     <stdin> input-stream !
@@ -1067,8 +1089,53 @@ s" unittest.f" include
     die
 ;
 
-' final-quit is quit
 
-welcome
-hide welcome
-quit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\ ' final-quit is quit
+
+
+: help ." need to implement help menu" ;
+
+
+\ welcome
+\ hide welcome
+\ quit
+
+
+
+
+
+
+
+
+
+
+
+\ define string as word
+\ or check to see if string exists first...
+
+
+
+
+
