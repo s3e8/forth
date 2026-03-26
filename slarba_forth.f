@@ -1071,7 +1071,7 @@ s" unittest.f" include
 ;
 
 : welcome
-    ." What is MLT Forth? " ;
+    ." What is MLT Forth? " cr ;
 
 : final-quit
     <stdin> input-stream !
@@ -1092,6 +1092,16 @@ s" unittest.f" include
 
 
 
+: final-quit
+    <stdin> input-stream !
+    begin
+        ." forth> "
+        interpret
+        input-stream @ ?eof not
+    while
+    repeat
+    die
+;
 
 
 
@@ -1103,6 +1113,7 @@ s" unittest.f" include
 
 
 
+: help ." need to implement help menu" cr ;
 
 
 
@@ -1110,17 +1121,11 @@ s" unittest.f" include
 
 
 
+' final-quit is quit
 
-
-\ ' final-quit is quit
-
-
-: help ." need to implement help menu" ;
-
-
-\ welcome
-\ hide welcome
-\ quit
+welcome
+hide welcome
+quit
 
 
 

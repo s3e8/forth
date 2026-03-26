@@ -33,10 +33,13 @@ typedef struct reader_state
 
 static void init_reader_state(reader_state_t* state, char* wbuf, cell wbuf_size, char* lbuf, cell lbuf_size, FILE* fp) {
     state->stream             = fp;
+
     state->word_length        = wbuf_size;
     state->line_length        = lbuf_size;
     state->current_line       = lbuf;
     state->current_line[0]    = '\0';
+    // state->current_word
+
     state->remaining_words    = lbuf;
 }
 
@@ -51,17 +54,19 @@ static reader_state_t* open_file(const char* filename, const char* mode)
     char* wbuf = malloc(LINEBUF_LENGTH);
     if (!wbuf) goto err_exit;
 
-    reader_state_t* reader_state = malloc(sizeof(reader_state_t));
-    if (!reader_state) goto err_exit;
+    reader_state_t* reader = malloc(sizeof(reader_state_t));
+    if (!reader) goto err_exit;
 
-    reader_state->stream            = fp;
-    reader_state->line_length       = LINEBUF_LENGTH;
-    reader_state->word_length       = WORDBUF_LENGTH;
-    reader_state->current_line      = lbuf;
-    reader_state->remaining_words   = lbuf;
-    reader_state->current_line[0]   = '\0';
+    init_reader_state(reader, NULL, WORDBUF_LENGTH, lbuf, LINEBUF_LENGTH, fp);
 
-    return reader_state;
+    // reader_state->stream            = fp;
+    // reader_state->line_length       = LINEBUF_LENGTH;
+    // reader_state->word_length       = WORDBUF_LENGTH;
+    // reader_state->current_line      = lbuf;
+    // reader_state->remaining_words   = lbuf;
+    // reader_state->current_line[0]   = '\0';
+
+    return reader;
 
     err_exit:
         free(lbuf);
@@ -199,7 +204,25 @@ char up(char c) // todo: cell?
 }
 
 
+static char* prompt(const char* str, reader_state_t* reader)
+{
+    printf("%s", prompt);
+    fflush(stdout);
+    return get_next_line(reader);
+}
 
+
+// static char *prompt_line(const char *prompt, reader_state_t *state) {
+//   char *tmp = readline(prompt);
+//   if(!tmp) {
+//     return NULL;
+//   }
+//   add_history(tmp);
+//   strncpy(state->linebuf, tmp, state->linebuf_size);
+//   free(tmp);
+//   state->next_char = state->linebuf;
+//   return state->next_char;
+// }
 
 
 
@@ -381,10 +404,11 @@ void deffconst(const char* name, cell value)
 #define OFFSET(x)  (void*)((x) * sizeof(cell)) // todo: or (x) * sizeof...? // to calculate branch offsets
 
 
+
+// todo: rm fs?
 typedef struct thread_state_t {
     cell              killed;
     struct thread_state_t* next;
-
     void**            ip;
 
     void***           rs;
@@ -395,11 +419,14 @@ typedef struct thread_state_t {
 
     cell*             ts;
     cell*             t0;
+
+    float*            fs;
+    float*            f0;
 } thread_state_t;
 
 static thread_state_t* current_thread = NULL;
 
-static thread_state_t* init_thread(cell* s0, void*** r0, cell* t0, void** entrypoint)
+static thread_state_t* init_thread(cell* s0, void*** r0, cell* t0, float* f0, void** entrypoint)
 {
     thread_state_t* new = malloc(sizeof(thread_state_t));
     new->killed = 0;
@@ -407,9 +434,8 @@ static thread_state_t* init_thread(cell* s0, void*** r0, cell* t0, void** entryp
     new->s0  = s0;  new->ds = s0;
     new->r0  = r0;  new->rs = r0;
     new->t0  = t0;  new->ts = t0;
-
-    if (!current_thread)
-    {
+    new->f0  = f0;  new->fs = f0;
+    if (!current_thread) {
         current_thread = new;
         new->next = new;
     } else {
@@ -431,12 +457,9 @@ static thread_state_t* create_thread(int ds_size, int rs_size, void** entrypoint
 static void kill_thread()
 {
     if (!current_thread || current_thread->next == current_thread) return;
-
-    current_thread->killed  = 1;
-    thread_state_t* i       = current_thread;
-
+    current_thread->killed = 1;
+    thread_state_t* i = current_thread;
     while (i->next != current_thread) i = i->next;
-
     i->next = current_thread->next;
     current_thread = i;
 }
@@ -463,23 +486,9 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     void**   nestingstack_space[NESTINGSTACK_MAX_DEPTH];                 // i think this is for re-entering the interpreter after immediate execution??
     void***  nestingstack = nestingstack_space + NESTINGSTACK_MAX_DEPTH; // ... as opposed to rs which is for lots of stuff // todo: rename to ns?
 
-    void* code_immediatebuf[] = { NULL, CODE(IRETURN) };                                  // todo: do i need to put length inside immediatebuf[2] etc
-    void* word_immediatebuf[] = { CODE(CALL), NULL, CODE(IRETURN) };                      //
-    void* quit[]              = { CODE(INTERPRET),  CODE(BRANCH), OFFSET(-2), CODE(EOW) }; /* the interpreter loop */
-
-    char            current_word[LINEBUF_LENGTH];
-    char            wordbuf[WORDBUF_LENGTH];
-    char            stdinbuf[1024];
-    reader_state_t  stdin_state;
-
     // some default vars and constants
     cell base  = 10;
     cell state = 0;
-
-
-
-
-
 
     /* and finally, some quick access variables */
     // todo: organize by what is mostly used by each type of bytecode... eg stack, math, dict, etc
@@ -492,6 +501,31 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     register cell  tmp;
     register cell  a;
     register cell  b;
+
+    void* code_immediatebuf[] = { NULL, CODE(IRETURN) };                                  // todo: do i need to put length inside immediatebuf[2] etc
+    void* word_immediatebuf[] = { CODE(CALL), NULL, CODE(IRETURN) };                      //
+    void* quit[]              = { CODE(INTERPRET),  CODE(BRANCH), OFFSET(-2), CODE(EOW) }; /* the interpreter loop */
+
+    char            current_word[LINEBUF_LENGTH];
+    char            wordbuf[WORDBUF_LENGTH];
+    char            stdinbuf[1024];
+    reader_state_t  stdin_state;
+
+    setvbuf(stdin, NULL, _IONBF, 0);  // disable input buffering, we have our own
+    // init_reader_state(&stdin_state, stdinbuf, 1024, stdin);
+    init_reader_state(&stdin_state, /* wordbuf */ NULL, WORDBUF_LENGTH, stdinbuf, LINEBUF_LENGTH, stdin); // static void init_reader_state(reader_state_t* state, char* wbuf, cell wbuf_size, char* lbuf, cell lbuf_size, FILE* fp)
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     /* ------------------------------------------------------ */
@@ -527,12 +561,17 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     defconst("input-stream",  (cell) &reader_state);
     defconst("output-stream", (cell) &output_stream);
 
+    defcode("format", CODE(FORMAT), 0);
+    defcode("prompt", CODE(PROMPT), 0);
+
     defconst("cellsize",    (cell) sizeof(cell));
     defconst("floatsize",   (cell) sizeof(float));
     defconst("headersize",  (cell) sizeof(word_header_t));
 
-    defconst("current-thread",  (cell) &current_thread);
-    defconst("debugger-vector", (cell) &debugger_vector);
+    defconst ("current-thread",  (cell) &current_thread);
+    defconst ("debugger-vector", (cell) &debugger_vector);
+    defcode  ("new-thread",       CODE(NEW_THREAD),  0);
+    defcode  ("kill-thread",      CODE(KILL_THREAD), 0);
 
     defconst("here",        (cell) &here); // we give the address so we can store stuff there
     defconst("here0",       (cell) here0); // todo: why not &here0? cause malloc?
@@ -661,8 +700,8 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
 
     defcode("open-file",  CODE(OPEN_FILE),  0);
     defcode("close-file", CODE(CLOSE_FILE), 0);
-    // defcode("?eof",       CODE(IS_EOF),     0);
-    // defcode("?eol",       CODE(IS_EOL),     0);
+    defcode("?eof",       CODE(IS_EOF),     0);
+    defcode("?eol",       CODE(IS_EOL),     0);
     // defcode("prompt",     CODE(PROMPT),     0);
 
     defcode("tsp@", CODE(GET_T0), 0); // todo: rename?
@@ -673,20 +712,17 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     // // dyncall stuff
 
 
-    // defcode("new-thread", CODE(NEW_THREAD), 0);
-    // defcode("kill-thread", CODE(KILL_THREAD), 0);
-
-    // defcode("fsp!", CODE(SET_FS), 0);
-    // defcode("fsp@", CODE(GET_FS), 0);
+    defcode("fsp!", CODE(SET_FS), 0);
+    defcode("fsp@", CODE(GET_FS), 0);
     // defcode("f+", CODE(FADD), 0);
     // defcode("f-", CODE(FSUB), 0);
     // defcode("f*", CODE(FMUL), 0);
     // defcode("f/", CODE(FDIV), 0);
     // defcode("powf", CODE(POWF), 0); // todo: rename to fpow?
-    // defcode("f<", CODE(FLT), 0);
-    // defcode("f>", CODE(FGT), 0);
-    // defcode("f<=", CODE(FLTE), 0);
-    // defcode("f>=", CODE(FGTE), 0);
+    defcode("f<", CODE(FLT), 0);
+    defcode("f>", CODE(FGT), 0);
+    defcode("f<=", CODE(FLTE), 0);
+    defcode("f>=", CODE(FGTE), 0);
     // defcode("fabs", CODE(FABS), 0);
     // defcode("ffloor", CODE(FFLOOR), 0);
     // defcode("fsqrt", CODE(FSQRT), 0);

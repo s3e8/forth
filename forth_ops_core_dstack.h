@@ -145,8 +145,21 @@ BUILTIN(FGT,
     FPUSH(a > b);
 })
 
-BUILTIN(FLTE, { goto OP(TODO); })
-BUILTIN(FGTE, { goto OP(TODO); })
+BUILTIN(FLTE,
+{
+    float a = FPOP();
+    float b = FPOP();
+    FPUSH(a <= b);
+})
+BUILTIN(FGTE,
+{
+    float a = FPOP();
+    float b = FPOP();
+    FPUSH(a >= b);
+})
+
+
+
 
 
 BUILTIN(FDUP,

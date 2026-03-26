@@ -97,6 +97,60 @@ BUILTIN(PARSE_FNUM,
 
 
 
+BUILTIN(IS_EOL,
+{
+    reader_state_t* reader = (reader_state_t*)POP();
+    PUSH(is_eol(reader));
+})
+
+BUILTIN(IS_EOF,
+{
+    reader_state_t* reader = (reader_state_t*)POP();
+    PUSH(is_eof(reader));
+})
+
+
+
+
+BUILTIN(FORMAT, {
+    char* fmt = (char*)POP();
+    static char buf[512];
+    char* out = buf;
+    char* f = fmt;
+    while (*f) {
+        if (*f == '%') {
+            f++;
+            switch (*f++) {
+                case 'd': out += sprintf(out, "%d", (int)POP());      break;
+                case 'f': out += sprintf(out, "%f", (double)FPOP());  break;
+                case 's': out += sprintf(out, "%s", (char*)POP());    break;
+                case '%': *out++ = '%';                                break;
+            }
+        } else {
+            *out++ = *f++;
+        }
+    }
+    *out = '\0';
+    PUSH(buf);
+})
+
+
+BUILTIN(PROMPT,
+{
+    reader_state_t* reader = (reader_state_t*)POP();
+    char* str = (char*)POP();
+    prompt(str, reader);
+})
+
+
+
+
+
+
+
+
+
+
 
 
 BUILTIN(DOCOL,
