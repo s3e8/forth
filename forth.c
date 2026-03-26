@@ -574,8 +574,8 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     // defcode("ccopy", CODE(CCOPY), 0);
     // defcode("cmove", CODE(CMOVE), 0);
     // //
-    // defcode("number",   CODE(PARSE_NUM), 0);  // needed for interpret rewrite
-    // defcode("fnumber", CODE(PARSE_FNUM), 0);
+    defcode("number",   CODE(PARSE_NUM), 0);  // needed for interpret rewrite
+    defcode("fnumber",  CODE(PARSE_FNUM), 0);
 
     // defcode("open-file",  CODE(OPEN_FILE),  0);
     // defcode("close-file", CODE(CLOSE_FILE), 0);
@@ -810,7 +810,7 @@ int main(int argc, char** argv)
     void**  returnstack[512];
 
 
-    reader_state_t* input_state = open_file("forth.f", "r");
+    reader_state_t* input_state = open_file("slarba_forth.f", "r");
     if(!input_state)
     {
         fprintf(stderr, "Cannot open bootstrap file forth.f!\n");

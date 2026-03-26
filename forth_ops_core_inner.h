@@ -56,7 +56,43 @@ BUILTIN(IEXECUTE,
 })
 
 
+// BYTECODE(PARSENUM, "number", 1, 0, 0, {
+//     char *endptr = NULL;
+//     char *str = (char*)POP();
+//     cell val = (cell)strtol(str, &endptr, base);
+//     if(*endptr!='\0') {
+//       PUSH(0);
+//     } else {
+//       PUSH(val);
+//       PUSH(1);
+//     }
+//   })
 
+BUILTIN(PARSE_NUM,
+{
+    char* endptr = NULL;
+    char* str    = (char*)POP();
+    cell val     = (cell)strtol(str, &endptr, base);
+
+    if (*endptr != '\0') PUSH(0); // ?
+    else {
+        PUSH(val);
+        PUSH(1);
+    }
+})
+
+BUILTIN(PARSE_FNUM,
+{
+    char* endptr = NULL;
+    char* str    = (char*)POP();
+    float val    = strtof(str, &endptr);
+
+    if (*endptr != '\0') PUSH(0);
+    else {
+        FPUSH(val);
+        PUSH(0);
+    }
+})
 
 
 
