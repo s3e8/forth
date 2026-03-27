@@ -1092,16 +1092,16 @@ s" unittest.f" include
 
 
 
-: final-quit
-    <stdin> input-stream !
-    begin
-        ." forth> "
-        interpret
-        input-stream @ ?eof not
-    while
-    repeat
-    die
-;
+\ : final-quit
+\    <stdin> input-stream !
+\    begin
+\        ." forth> "
+\        interpret
+\        input-stream @ ?eof not
+\    while
+\    repeat
+\    die
+\;
 
 
 
