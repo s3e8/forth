@@ -107,8 +107,8 @@ static char* get_next_line(reader_state_t* reader_state)
     // printf("getting next line...\n");
     if (reader_state->stream == stdin)
     {
-        printf("forth> ");
-        fflush(stdout);
+        // printf("forth> ");
+        // fflush(stdout);
     }
     if (!fgets(reader_state->current_line, reader_state->line_length, reader_state->stream)) return NULL;
 
@@ -929,7 +929,7 @@ int main(int argc, char** argv)
     void**  returnstack[512];
 
 
-    reader_state_t* input_state = open_file("slarba_forth.f", "r");
+    reader_state_t* input_state = open_file("forth.f", "r");
     if(!input_state)
     {
         fprintf(stderr, "Cannot open bootstrap file forth.f!\n");

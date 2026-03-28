@@ -52,7 +52,19 @@ BUILTIN(IEXECUTE,
 {
     // printf("[ iexecute ]\n");
     word_header_t* entry = (word_header_t*)POP();
-    CODE(DOCOL);
+    void** code = cfa(entry);
+
+    *--nestingstack = ip;
+
+    if (entry->flags & FLAG_BUILTIN
+    {
+        code_immediatebuf[0] = code;
+        ip = code_immediatebuf;
+    }
+    else {
+        word_immediatebuf[1] = (void*)code;
+        ip = word_immediatebuf;
+    }
 })
 
 

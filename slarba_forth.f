@@ -1076,16 +1076,16 @@ s" unittest.f" include
 : final-quit
     <stdin> input-stream !
     begin
-	format-prompt input-stream @ prompt
-	input-stream @ ?eof not
-    while
-	    begin
-		input-stream @ ?eol not
-	    while
-		    ' interpret catch drop
-	    repeat
-	    cr
-    repeat
+    	format-prompt input-stream @ prompt
+    	input-stream @ ?eof not
+        while
+    	    begin
+    		input-stream @ ?eol not
+    	    while
+    		    ' interpret catch drop
+    	    repeat
+    	    cr
+        repeat
     die
 ;
 
@@ -1101,7 +1101,7 @@ s" unittest.f" include
 \    while
 \    repeat
 \    die
-\;
+\ ;
 
 
 
