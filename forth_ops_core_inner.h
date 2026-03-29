@@ -30,23 +30,6 @@ BUILTIN(EXEC_BUILTIN, // todo: ...
     ip = code_immediatebuf;
 })
 
-// BUILTIN(IEXECUTE,
-// {
-//     word_header_t* entry = (word_header_t*)POP();
-//     void** code = cfa(entry);
-//     *--nestingstack = ip;
-
-//     if (entry->flags & FLAG_BUILTIN
-//     {
-//         code_immediatebuf[0] = code;
-//         ip = code_immediatebuf;
-//     }
-//     else {
-//         word_immediatebuf[1] = (void*)code;
-//         ip = word_immediatebuf;
-//     }
-// })
-
 // todo: this is not for inner I dont think?
 BUILTIN(IEXECUTE,
 {
@@ -56,7 +39,7 @@ BUILTIN(IEXECUTE,
 
     *--nestingstack = ip;
 
-    if (entry->flags & FLAG_BUILTIN
+    if (entry->flags & FLAG_BUILTIN)
     {
         code_immediatebuf[0] = code;
         ip = code_immediatebuf;
@@ -86,8 +69,12 @@ BUILTIN(PARSE_NUM,
     char* str    = (char*)POP();
     cell val     = (cell)strtol(str, &endptr, base);
 
-    if (*endptr != '\0') PUSH(0); // ?
-    else {
+    if (*endptr != '\0')
+    {
+        PUSH(0); // ?
+    }
+    else
+    {
         PUSH(val);
         PUSH(1);
     }

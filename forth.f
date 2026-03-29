@@ -39,7 +39,6 @@ datahere0 !
 : false     0   		; inline
 : not       0=  		; inline
 
-
 : cell  cellsize   ; inline
 : cells cellsize * ; inline
 : cell+ cellsize + ; inline
@@ -158,6 +157,7 @@ datahere0 !
     then
 ;
 
+\
 : pick 1+ cellsize * dsp@ + @ ;
 
 : make-const-str ( str -- conststr )
@@ -186,3 +186,5 @@ variable nil nil nil !														\ the empty list
 
 
 
+." this works" cr
+." sweet" cr cr

@@ -629,9 +629,9 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     defcode("rsp@", CODE(RSP_GET), 0);
     defcode("rsp!", CODE(RSP_PUT), 0);
     // // lit
-    defcode("lit+", CODE(LIT_PLUS), FLAG_HASARG);
-    defcode("lit-", CODE(LIT_MINUS), FLAG_HASARG);
-    defcode("flit", CODE(FLIT), FLAG_HASARG);
+    defcode("lit+",  CODE(LIT_PLUS), FLAG_HASARG);
+    defcode("lit-",  CODE(LIT_MINUS), FLAG_HASARG);
+    defcode("flit",  CODE(FLIT), FLAG_HASARG);
     defcode("flit+", CODE(FLIT_PLUS), FLAG_HASARG);
     defcode("flit-", CODE(FLIT_MINUS), FLAG_HASARG);
     // dup
@@ -695,13 +695,13 @@ extern void start_forth(void** ip, cell* ds, void*** rs, reader_state_t* reader_
     // defcode("ccopy", CODE(CCOPY), 0);
     // defcode("cmove", CODE(CMOVE), 0);
     // //
-    defcode("number",   CODE(PARSE_NUM), 0);  // needed for interpret rewrite
-    defcode("fnumber",  CODE(PARSE_FNUM), 0);
+    defcode("number",       CODE(PARSE_NUM), 0);  // needed for interpret rewrite
+    defcode("fnumber",      CODE(PARSE_FNUM), 0);
 
-    defcode("open-file",  CODE(OPEN_FILE),  0);
-    defcode("close-file", CODE(CLOSE_FILE), 0);
-    defcode("?eof",       CODE(IS_EOF),     0);
-    defcode("?eol",       CODE(IS_EOL),     0);
+    defcode("open-file",    CODE(OPEN_FILE),  0);
+    defcode("close-file",   CODE(CLOSE_FILE), 0);
+    defcode("?eof",         CODE(IS_EOF),     0);
+    defcode("?eol",         CODE(IS_EOL),     0);
     // defcode("prompt",     CODE(PROMPT),     0);
 
     defcode("tsp@", CODE(GET_T0), 0); // todo: rename?
